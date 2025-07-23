@@ -20,6 +20,7 @@ import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 
 import com.sk89q.worldedit.WorldEdit;
 
+import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,6 +38,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class SaveArenaCommand implements CommandExecutor, TabCompleter {
+
+    private final ArenaDataManager dataManager;
+
+    public SaveArenaCommand() {
+        this.dataManager = new ArenaDataManager();
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (!(commandSender instanceof Player player)) {
@@ -45,7 +53,7 @@ public class SaveArenaCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length < 1) {
-            player.sendMessage("§cUsage: /savearena <arenaName>");
+            player.sendMessage("§cUsage: /arena save <arenaName>");
             return true;
         }
 

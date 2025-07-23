@@ -2,8 +2,6 @@ package io.github.woodstop.arenaRegenerator;
 
 import io.github.woodstop.arenaRegenerator.Commands.*;
 import io.github.woodstop.arenaRegenerator.Listeners.ArenaSignListener;
-import io.github.woodstop.arenaRegenerator.TabCompletion.ArenaTabCompleter;
-import io.github.woodstop.arenaRegenerator.TabCompletion.NoTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
@@ -43,26 +41,10 @@ public final class ArenaRegenerator extends JavaPlugin {
             return; // Stop further initialization
         }
 
-        getCommand("savearena").setExecutor(new SaveArenaCommand());
-        getCommand("savearena").setTabCompleter(new SaveArenaCommand());
-
-        getCommand("regenarena").setExecutor(new RegenerateArenaCommand());
-        getCommand("regenarena").setTabCompleter(new ArenaTabCompleter());
-
-        getCommand("delarena").setExecutor(new DeleteArenaCommand());
-        getCommand("delarena").setTabCompleter(new ArenaTabCompleter());
-
-        getCommand("arenas").setExecutor(new ArenaListCommand());
-        getCommand("arenas").setTabCompleter(new NoTabCompleter());
-
-        getCommand("cleararena").setExecutor(new ClearArenaCommand());
-        getCommand("cleararena").setTabCompleter(new ArenaTabCompleter());
-
-        getCommand("arenainfo").setExecutor(new ArenaInfoCommand());
-        getCommand("arenainfo").setTabCompleter(new ArenaTabCompleter());
-
-        getCommand("selectarena").setExecutor(new SelectArenaCommand());
-        getCommand("selectarena").setTabCompleter(new ArenaTabCompleter());
+        // Register the main ArenaCommand and its TabCompleter
+        ArenaCommand arenaCommandExecutor = new ArenaCommand();
+        getCommand("arena").setExecutor(arenaCommandExecutor);
+        getCommand("arena").setTabCompleter(arenaCommandExecutor);
 
         getServer().getPluginManager().registerEvents(new ArenaSignListener(),this);
     }

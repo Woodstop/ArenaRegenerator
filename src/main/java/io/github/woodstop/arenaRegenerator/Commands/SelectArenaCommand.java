@@ -31,7 +31,7 @@ public class SelectArenaCommand implements CommandExecutor {
         }
 
         if (args.length != 1) {
-            player.sendMessage("§cUsage: /selectarena <arenaName>");
+            player.sendMessage("§cUsage: /arena select <arenaName>");
             return true;
         }
 

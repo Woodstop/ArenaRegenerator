@@ -17,7 +17,7 @@ A Minecraft Paper plugin for managing and regenerating arena regions with WorldE
 
 ## **Features**
 
-Key features include: saving WorldEdit selections as schematics with origin points, instantly regenerating arenas, clearing arena blocks to air (schematic retained), listing/deleting/viewing info for saved arenas, loading arena boundaries as WorldEdit selections, and creating interactive reset signs with cooldowns.
+Key features include: saving WorldEdit selections as schematics with origin points, instantly regenerating arenas, clearing arena blocks to air (schematic retained), listing/deleting/viewing info for saved arenas, loading arena boundaries as WorldEdit selections, and creating interactive regen signs with cooldowns.
 
 ## **Dependencies**
 
@@ -38,29 +38,15 @@ This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be
 
 ### **Commands**
 
-Commands require arenaregenerator.\<command\> permission. Use \<arenaName\> for your arena name.
+Commands use the `/arena` prefix. An alias `/ar` is also available. Replace `<arenaName>` with your desired name for the arena.
 
-* `/savearena <arenaName>`: Saves current WorldEdit selection as a schematic with origin.
-    * **Usage**: Select region with WorldEdit, then run.
-    * **Permission**: `arenaregenerator.savearena`
-* `/regenarena <arenaName>`: Pastes saved arena schematic at original location.
-    * **Usage**: `/regenarena myArena`
-    * **Permission**: `arenaregenerator.regenarena`
-* `/cleararena <arenaName>`: Clears arena blocks to air; schematic remains.
-    * **Usage**: `/cleararena myArena`
-    * **Permission**: `arenaregenerator.cleararena`
-* `/arenas`: Lists all saved arena names.
-    * **Usage**: `/arenas`
-    * **Permission**: `arenaregenerator.arenas`
-* `/delarena <arenaName>`: Deletes arena schematic and data.
-    * **Usage**: `/delarena myArena`
-    * **Permission**: `arenaregenerator.delarena`
-* `/arenainfo <arenaName>`: Displays arena metadata (origin, world, schematic status).
-    * **Usage**: `/arenainfo myArena`
-    * **Permission**: `arenaregenerator.arenainfo`
-* `/selectarena <arenaName>`: Loads saved arena boundaries as WorldEdit selection.
-    * **Usage**: `/selectarena myArena`
-    * **Permission**: `arenaregenerator.selectarena`
+* `/arena save <arenaName>`: Saves current WorldEdit selection as a schematic with origin.
+* `/arena regen <arenaName>`: Pastes saved arena schematic at original location.
+* `/arena clear <arenaName>`: Clears arena blocks to air; schematic remains.
+* `/arena list`: Lists all saved arena names.
+* `/arena delete <arenaName>`: Deletes arena schematic and data.
+* `/arena info <arenaName>`: Displays arena metadata (origin, world, schematic status).
+* `/arena select <arenaName>`: Loads saved arena boundaries as WorldEdit selection.
 
 ### **Arena Regen Signs**
 
@@ -76,13 +62,13 @@ Create signs to automatically regenerate arenas.
 
 All permissions are default: false (requires explicit granting) unless otherwise specified.
 
-* `arenaregenerator.regenarena`: Allows use of /regenarena.
-* `arenaregenerator.savearena`: Allows use of /savearena.
-* `arenaregenerator.arenas`: Allows use of /arenas.
-* `arenaregenerator.delarena`: Allows use of /delarena.
-* `arenaregenerator.cleararena`: Allows use of /cleararena.
-* `arenaregenerator.arenainfo`: Allows use of /arenainfo.
-* `arenaregenerator.selectarena`: Allows use of /selectarena.
+* `arenaregenerator.regen`: Allows use of /arena regen.
+* `arenaregenerator.save`: Allows use of /arena save.
+* `arenaregenerator.list`: Allows use of /arena list.
+* `arenaregenerator.delete`: Allows use of /arena delete.
+* `arenaregenerator.clear`: Allows use of /arena clear.
+* `arenaregenerator.info`: Allows use of /arena info.
+* `arenaregenerator.select`: Allows use of /arena select.
 * `arenaregenerator.sign.create`: Allows players to create \[RegenArena\] signs.
 * `arenaregenerator.sign.use`: Allows players to use \[RegenArena\] signs.
 * `arenaregenerator.sign.bypass`: Allows players to bypass the cooldown on \[RegenArena\] signs.

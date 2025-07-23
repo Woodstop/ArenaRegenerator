@@ -18,7 +18,7 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 
 import java.io.IOException;
 
-// Command class triggered by /regenarena
+
 public class RegenerateArenaCommand implements CommandExecutor {
 
     private final ArenaDataManager dataManager;
@@ -31,7 +31,7 @@ public class RegenerateArenaCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
 
         if (args.length != 1) {
-            commandSender.sendMessage("§cUsage: /regenarena <arenaName>");
+            commandSender.sendMessage("§cUsage: /arena regen <arenaName>");
             return true;
         }
         
@@ -93,7 +93,6 @@ public class RegenerateArenaCommand implements CommandExecutor {
             commandSender.sendMessage("§cError regenerating arena: " + e.getMessage());
             e.printStackTrace();
         }
-
         return true;
     }
 }

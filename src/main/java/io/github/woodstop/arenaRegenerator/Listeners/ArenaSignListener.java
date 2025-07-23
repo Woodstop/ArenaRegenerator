@@ -83,7 +83,7 @@ public class ArenaSignListener implements Listener {
         }
 
         // Trigger your existing regen logic here:
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "regenarena " + arenaName);
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena regen " + arenaName);
         player.sendMessage("§aRegenerating arena: " + arenaName);
     }
 
