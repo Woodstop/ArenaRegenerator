@@ -40,6 +40,26 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                             <configuration>
+                                      <finalName>${project.artifactId}-${project.version}</finalName>
+                                      <minimizeJar>true</minimizeJar>
+                                      <relocations>
+                                               <relocation>
+                                                        <pattern>net.kyori.adventure</pattern>
+                                                        <shadedPattern>io.github.woodstop.arenaregenerator.shaded.adventure</shadedPattern>
+                                               </relocation>
+                                      </relocations>
+                                      <filters>
+                                               <filter>
+                                                        <artifact>*:*</artifact>
+                                                        <excludes>
+                                                                 <exclude>META-INF/*.SF</exclude>
+                                                                 <exclude>META-INF/*.DSA</exclude>
+                                                                 <exclude>META-INF/*.RSA</exclude>
+                                                        </excludes>
+                                               </filter>
+                                      </filters>
+                             </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -75,6 +95,25 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-api</artifactId>
+            <version>4.23.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-platform-bukkit</artifactId>
+            <version>4.4.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-plain</artifactId>
+            <version>4.22.0</version>
+            <scope>compile</scope>
+        </dependency>
+             
         <!-- FAWE Core -->
         <dependency>
             <groupId>com.fastasyncworldedit</groupId>
@@ -89,6 +128,13 @@
             <artifactId>worldedit-bukkit</artifactId>
             <version>7.3.14</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Gson for JSON handling -->
+         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
