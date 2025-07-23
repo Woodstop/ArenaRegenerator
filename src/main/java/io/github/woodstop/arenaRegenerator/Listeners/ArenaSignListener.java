@@ -1,8 +1,6 @@
 package io.github.woodstop.arenaRegenerator.Listeners;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
+import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -18,8 +16,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +24,11 @@ public class ArenaSignListener implements Listener {
 
     private final Map<String, Long> lastClickTime = new HashMap<>();
     private final long cooldownMillis = 10 * 1000; // 10 seconds
+    private final ArenaDataManager dataManager;
+
+    public ArenaSignListener() {
+        this.dataManager = new ArenaDataManager();
+    }
 
     @EventHandler
     public void onSignClick(PlayerInteractEvent event) {
@@ -65,7 +66,8 @@ public class ArenaSignListener implements Listener {
             if (lastClickTime.containsKey(player.getName())) {
                 long last = lastClickTime.get(player.getName());
                 if ((now - last) < cooldownMillis) {
-                    player.sendMessage("§cYou must wait before using this again.");
+                    long remainingSeconds = (cooldownMillis - (now - last)) / 1000;
+                    player.sendMessage("§cYou must wait before using this again. Remaining: " + remainingSeconds + "s");
                     return;
                 }
             }
@@ -73,21 +75,13 @@ public class ArenaSignListener implements Listener {
         }
 
         // Validate arena
-        File jsonFile = new File(ArenaRegenerator.getInstance().getDataFolder(), "arenas.json");
-        if (!jsonFile.exists()) {
-            player.sendMessage("§cArena data file missing.");
-            return;
-        }
-
-        // If the arena on the sign is not found in arenas.json, stop
-        try (FileReader reader = new FileReader(jsonFile)) {
-            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-            if (!root.has(arenaName)) {
+        try {
+            if (!dataManager.arenaExists(arenaName)) {
                 player.sendMessage("§cArena not found: " + arenaName);
                 return;
             }
         } catch (IOException e) {
-            player.sendMessage("§cError reading arenas.json.");
+            player.sendMessage("§cError reading arena data. See console for details.");
             e.printStackTrace();
             return;
         }
@@ -103,7 +97,6 @@ public class ArenaSignListener implements Listener {
         String line0 = event.line(0) != null
                 ? PlainTextComponentSerializer.plainText().serialize(event.line(0)).trim()
                 : "";
-
 
         if (line0.equalsIgnoreCase("[ResetArena]")) {
             if (!event.getPlayer().hasPermission("arenaregenerator.sign.create")) {
