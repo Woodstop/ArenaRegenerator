@@ -41,8 +41,8 @@ public class ArenaSignListener implements Listener {
         String header = getSignLine(sign, 0);
         String arenaName = getSignLine(sign, 1);
 
-        // If the first line of the sign is not [ResetArena], stop
-        if (!header.equalsIgnoreCase("[ResetArena]")) return;
+        // If the first line of the sign is not [RegenArena], stop
+        if (!header.equalsIgnoreCase("[RegenArena]")) return;
 
         // Prevent the edit sign screen from opening
         event.setCancelled(true);
@@ -87,21 +87,21 @@ public class ArenaSignListener implements Listener {
         player.sendMessage("§aRegenerating arena: " + arenaName);
     }
 
-    // Listener to change [ResetArena] to blue when typed and prevent players without permission from creating a sign
+    // Listener to change [RegenArena] to blue when typed and prevent players without permission from creating a sign
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         String line0 = event.line(0) != null
                 ? PlainTextComponentSerializer.plainText().serialize(event.line(0)).trim()
                 : "";
 
-        if (line0.equalsIgnoreCase("[ResetArena]")) {
+        if (line0.equalsIgnoreCase("[RegenArena]")) {
             if (!event.getPlayer().hasPermission("arenaregenerator.sign.create")) {
                 event.setCancelled(true);
-                event.getPlayer().sendMessage("§cYou don’t have permission to create a ResetArena sign.");
+                event.getPlayer().sendMessage("§cYou don’t have permission to create a RegenArena sign.");
                 return;
             }
 
-            String text = ChatColor.AQUA + "[ResetArena]";
+            String text = ChatColor.AQUA + "[RegenArena]";
             event.setLine(0,text);
         }
     }
@@ -113,7 +113,7 @@ public class ArenaSignListener implements Listener {
 
         String raw = getSignLine(sign, 0);
 
-        if (raw.equalsIgnoreCase("[ResetArena]") && !event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
+        if (raw.equalsIgnoreCase("[RegenArena]") && !event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
             event.setCancelled(true);
             event.getPlayer().sendMessage("§cYou don't have permission to break this sign.");
         }

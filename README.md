@@ -9,7 +9,7 @@ A Minecraft Paper plugin for managing and regenerating arena regions with WorldE
 3. [Installation](#installation)
 4. [Usage](#usage)
     * [Commands](#commands)
-    * [Arena Reset Signs](#arena-reset-signs)
+    * [Arena Regen Signs](#arena-regen-signs)
 5. [Permissions](#permissions)
 6. [Data Storage](#data-storage)
 7. [Building from Source](#building-from-source)
@@ -62,12 +62,12 @@ Commands require arenaregenerator.\<command\> permission. Use \<arenaName\> for 
     * **Usage**: `/selectarena myArena`
     * **Permission**: `arenaregenerator.selectarena`
 
-### **Arena Reset Signs**
+### **Arena Regen Signs**
 
 Create signs to automatically regenerate arenas.
 
 1. Place sign.
-2. Line 1: \[ResetArena\] (turns light blue with permission).
+2. Line 1: \[RegenArena\] (turns light blue with permission).
 3. Line 2: Exact arena name.
 4. Players with `arenaregenerator.sign.use` click to regenerate.
 5. Default 10-second cooldown; `arenaregenerator.sign.bypass` overrides.
@@ -83,10 +83,10 @@ All permissions are default: false (requires explicit granting) unless otherwise
 * `arenaregenerator.cleararena`: Allows use of /cleararena.
 * `arenaregenerator.arenainfo`: Allows use of /arenainfo.
 * `arenaregenerator.selectarena`: Allows use of /selectarena.
-* `arenaregenerator.sign.create`: Allows players to create \[ResetArena\] signs.
-* `arenaregenerator.sign.use`: Allows players to use \[ResetArena\] signs.
-* `arenaregenerator.sign.bypass`: Allows players to bypass the cooldown on \[ResetArena\] signs.
-* `arenaregenerator.sign.break`: Allows players to break \[ResetArena\] signs.
+* `arenaregenerator.sign.create`: Allows players to create \[RegenArena\] signs.
+* `arenaregenerator.sign.use`: Allows players to use \[RegenArena\] signs.
+* `arenaregenerator.sign.bypass`: Allows players to bypass the cooldown on \[RegenArena\] signs.
+* `arenaregenerator.sign.break`: Allows players to break \[RegenArena\] signs.
 
 ## **Data Storage**
 
