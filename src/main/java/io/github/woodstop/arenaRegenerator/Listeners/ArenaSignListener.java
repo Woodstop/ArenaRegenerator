@@ -1,13 +1,13 @@
 package io.github.woodstop.arenaRegenerator.Listeners;
 
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,13 +37,9 @@ public class ArenaSignListener implements Listener {
         Block block = event.getClickedBlock();
         if (block == null || !(block.getState() instanceof Sign sign)) return;
 
-        // Assuming `sign` is already confirmed to be a Sign instance
-        Component line0 = sign.getSide(Side.FRONT).line(0);
-        Component line1 = sign.getSide(Side.FRONT).line(1);
-
         // Get the first line and second line of the sign
-        String header = PlainTextComponentSerializer.plainText().serialize(line0).trim();
-        String arenaName = PlainTextComponentSerializer.plainText().serialize(line1).trim();
+        String header = getSignLine(sign, 0);
+        String arenaName = getSignLine(sign, 1);
 
         // If the first line of the sign is not [ResetArena], stop
         if (!header.equalsIgnoreCase("[ResetArena]")) return;
@@ -104,8 +100,9 @@ public class ArenaSignListener implements Listener {
                 event.getPlayer().sendMessage("§cYou don’t have permission to create a ResetArena sign.");
                 return;
             }
-            Component text = Component.text("[ResetArena]", TextColor.color(85,255,255));
-            event.line(0,text);
+
+            String text = ChatColor.AQUA + "[ResetArena]";
+            event.setLine(0,text);
         }
     }
 
@@ -114,12 +111,23 @@ public class ArenaSignListener implements Listener {
     public void onSignBreak(BlockBreakEvent event) {
         if (!(event.getBlock().getState() instanceof Sign sign)) return;
 
-        Component line0 = sign.getSide(Side.FRONT).line(0);
-        String raw = PlainTextComponentSerializer.plainText().serialize(line0).trim();
+        String raw = getSignLine(sign, 0);
 
         if (raw.equalsIgnoreCase("[ResetArena]") && !event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
             event.setCancelled(true);
             event.getPlayer().sendMessage("§cYou don't have permission to break this sign.");
         }
+    }
+
+    /**
+     * Helper method to get a sign line
+     *
+     * @param sign      The Sign or SignChangeEvent object.
+     * @param lineIndex The index of the line (0-3).
+     * @return The plain text content of the sign line.
+     */
+    private String getSignLine(Sign sign, int lineIndex) {
+     SignSide side = sign.getSide(Side.FRONT);
+        return ChatColor.stripColor(side.getLine(lineIndex)).trim();
     }
 }

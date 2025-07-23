@@ -6,7 +6,7 @@
 
     <groupId>io.github.woodstop</groupId>
     <artifactId>arenaregenerator</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>ArenaRegenerator</name>
@@ -20,6 +20,7 @@
 
     <build>
         <defaultGoal>clean package</defaultGoal>
+        <finalName>${project.name}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -29,39 +30,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                             <configuration>
-                                      <finalName>${project.artifactId}-${project.version}</finalName>
-                                      <minimizeJar>true</minimizeJar>
-                                      <relocations>
-                                               <relocation>
-                                                        <pattern>net.kyori.adventure</pattern>
-                                                        <shadedPattern>io.github.woodstop.arenaregenerator.shaded.adventure</shadedPattern>
-                                               </relocation>
-                                      </relocations>
-                                      <filters>
-                                               <filter>
-                                                        <artifact>*:*</artifact>
-                                                        <excludes>
-                                                                 <exclude>META-INF/*.SF</exclude>
-                                                                 <exclude>META-INF/*.DSA</exclude>
-                                                                 <exclude>META-INF/*.RSA</exclude>
-                                                        </excludes>
-                                               </filter>
-                                      </filters>
-                             </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         <resources>
@@ -93,25 +61,6 @@
             <artifactId>paper-api</artifactId>
             <version>1.21.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-api</artifactId>
-            <version>4.23.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.4.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-plain</artifactId>
-            <version>4.22.0</version>
-            <scope>compile</scope>
         </dependency>
              
         <!-- FAWE Core -->
