@@ -1,0 +1,43 @@
+name: ArenaRegenerator
+version: ${project.version}
+main: io.github.woodstop.arenaRegenerator.ArenaRegenerator
+api-version: '1.21'
+softdepend: [FastAsyncWorldEdit, WorldEdit]
+commands:
+  regenarena:
+    description: "Regenerates the arena"
+    usage: "/regenarena <arena_name>"
+    permission: arenaregenerator.regenarena
+  savearena:
+    description: "Saves the specified region as a schematic"
+    usage: "/savearena <regionName>"
+    permission: arenaregenerator.savearena
+  selectarena:
+      description: "Selects the specified region"
+      usage: "/selectarena <regionName>"
+      permission: arenaregenerator.selectarena
+  arenas:
+    description: "Provides a list of arenas"
+    usage: "/arenas"
+    permission: arenaregenerator.arenas
+  delarena:
+    description: "Deletes the specified arena"
+    usage: "/delarena <arenaName>"
+    permission: arenaregenerator.delarena
+  cleararena:
+    description: "Clears the blocks in an arena without deleting the schematic"
+    usage: "/cleararena <arenaName>"
+    permission: arenaregenerator.cleararena
+  arenainfo:
+    description: "Show metadata for a saved arena"
+    usage: "/arenainfo <arenaName>"
+    permission: arenaregenerator.arenainfo
+permissions:
+  arenaregenerator.sign.create:
+    default: false
+  arenaregenerator.sign.use:
+    default: false
+  arenaregenerator.sign.bypass:
+    default: false
+  arenaregenerator.sign.break:
+    default: false
