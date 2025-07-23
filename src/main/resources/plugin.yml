@@ -34,10 +34,10 @@ commands:
     permission: arenaregenerator.arenainfo
 permissions:
   arenaregenerator.sign.create:
-    default: false
+    default: op
   arenaregenerator.sign.use:
-    default: false
+    default: op
   arenaregenerator.sign.bypass:
-    default: false
+    default: op
   arenaregenerator.sign.break:
-    default: false
+    default: op
