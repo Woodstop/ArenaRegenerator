@@ -29,7 +29,7 @@ This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be
 **Important:** Only install ONE of these plugins (WorldEdit or FAWE) on your server. Having both can cause conflicts.
 ## **Installation**
 
-1. Download the latest `ArenaRegenerator-X.X.X.jar` from the [releases](https://www.google.com/search?q=https://github.com/Woodstop/ArenaRegenerator/releases) page (or compile it yourself).
+1. Download the latest `ArenaRegenerator-X.X.X.jar` from the [releases](https://github.com/Woodstop/ArenaRegenerator/releases) page (or compile it yourself).
 2. Download either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** compatible with your server version.
 3. Place both `ArenaRegenerator-X.X.X.jar` and your chosen WorldEdit/FAWE JAR into your server's plugins/ folder.
 4. Restart server.
