@@ -19,6 +19,24 @@ A Minecraft Paper plugin for managing and regenerating arena regions with WorldE
 
 Key features include: saving WorldEdit selections as schematics with origin points, instantly regenerating arenas, clearing arena blocks to air (schematic retained), listing/deleting/viewing info for saved arenas, loading arena boundaries as WorldEdit selections, and creating interactive regen signs with cooldowns.
 
+
+### /arena save and /arena info
+<p align="center">
+  <img src="https://github.com/Woodstop/ArenaRegenerator/blob/main/ArenaSave.gif?raw=true" />
+</p>
+
+
+### /arena clear and /arena regen
+<p align="center">
+  <img src="https://github.com/Woodstop/ArenaRegenerator/blob/main/ArenaRegen.gif?raw=true" />
+</p>
+
+
+### Arena Regen Signs
+<p align="center">
+  <img src="https://github.com/Woodstop/ArenaRegenerator/blob/main/RegenSign.gif?raw=true" />
+</p>
+
 ## **Dependencies**
 
 This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be installed on your server.
