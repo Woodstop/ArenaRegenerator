@@ -6,7 +6,7 @@ softdepend: [FastAsyncWorldEdit, WorldEdit]
 commands:
     arena:
       description: "Main command for ArenaRegenerator plugin."
-      usage: "/arena <save|regen|clear|list|delete|info|select> [arenaName]"
+      usage: "/arena <save|regen|clear|list|delete|info|select|join|leave> [arenaName]"
       permission: arenaregenerator.command
       aliases: [ ar ]
 permissions:
@@ -21,6 +21,9 @@ permissions:
       arenaregenerator.delete: true
       arenaregenerator.info: true
       arenaregenerator.select: true
+      arenaregenerator.join: true
+      arenaregenerator.leave: true
+      arenaregenerator.reload: true
   arenaregenerator.save:
     description: "Saves the specified region as a schematic"
     default: op
@@ -41,6 +44,15 @@ permissions:
     default: op
   arenaregenerator.select:
     description: "Selects the specified arena"
+    default: op
+  arenaregenerator.join:
+    description: "Allows joining minigame arenas"
+    default: true
+  arenaregenerator.leave:
+    description: "Allows leaving minigame arenas"
+    default: true
+  arenaregenerator.reload:
+    description: "Allows reloading the plugin configuration."
     default: op
   arenaregenerator.sign.create:
     default: op

@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 public class ArenaCommand implements CommandExecutor, TabCompleter {
 
-    // Instances of your individual command logic classes
     private final SaveArenaCommand saveArenaCommand = new SaveArenaCommand();
     private final RegenerateArenaCommand regenerateArenaCommand = new RegenerateArenaCommand();
     private final ClearArenaCommand clearArenaCommand = new ClearArenaCommand();
@@ -26,6 +25,9 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
     private final DeleteArenaCommand deleteArenaCommand = new DeleteArenaCommand();
     private final ArenaInfoCommand arenaInfoCommand = new ArenaInfoCommand();
     private final SelectArenaCommand selectArenaCommand = new SelectArenaCommand();
+    private final LeaveArenaCommand leaveArenaCommand = new LeaveArenaCommand();
+    private final JoinArenaCommand joinArenaCommand = new JoinArenaCommand();
+    private final ReloadCommand reloadCommand = new ReloadCommand();
 
     // ArenaDataManager for tab completion
     private final ArenaDataManager dataManager = new ArenaDataManager();
@@ -55,6 +57,12 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
                 return arenaInfoCommand.onCommand(sender, command, label, subArgs);
             case "select":
                 return selectArenaCommand.onCommand(sender, command, label, subArgs);
+            case "join":
+                return joinArenaCommand.onCommand(sender, command, label, subArgs);
+            case "leave":
+                return leaveArenaCommand.onCommand(sender, command, label, subArgs);
+            case "reload":
+                return reloadCommand.onCommand(sender, command, label, subArgs);
             default:
                 sendHelpMessage(sender);
                 return true;
@@ -73,12 +81,15 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("arenaregenerator.delete")) completions.add("delete");
             if (sender.hasPermission("arenaregenerator.info")) completions.add("info");
             if (sender.hasPermission("arenaregenerator.select")) completions.add("select");
+            if (sender.hasPermission("arenaregenerator.leave")) completions.add("leave");
+            if (sender.hasPermission("arenaregenerator.join")) completions.add("join");
+            if (sender.hasPermission("arenaregenerator.reload")) completions.add("reload");
             return completions.stream()
                     .filter(s -> s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            if (subCommand.equals("regen") || subCommand.equals("clear") || subCommand.equals("delete") || subCommand.equals("info") || subCommand.equals("select")) {
+            if (subCommand.equals("regen") || subCommand.equals("clear") || subCommand.equals("delete") || subCommand.equals("info") || subCommand.equals("select") || subCommand.equals("join")) {
                 // For commands requiring an arena name, suggest existing arena names
                 try {
                     return dataManager.loadArenasJson().keySet().stream()
@@ -102,6 +113,9 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission("arenaregenerator.delete")) sender.sendMessage(ChatColor.YELLOW + "/arena delete <arenaName> " + ChatColor.GRAY + "- Deletes a saved arena.");
         if (sender.hasPermission("arenaregenerator.info")) sender.sendMessage(ChatColor.YELLOW + "/arena info <arenaName> " + ChatColor.GRAY + "- Shows info about a saved arena.");
         if (sender.hasPermission("arenaregenerator.select")) sender.sendMessage(ChatColor.YELLOW + "/arena select <arenaName> " + ChatColor.GRAY + "- Selects a saved arena in WorldEdit.");
+        if (sender.hasPermission("arenaregenerator.join")) sender.sendMessage(ChatColor.YELLOW + "/arena join <arenaName> " + ChatColor.GRAY + "- Joins a minigame arena.");
+        if (sender.hasPermission("arenaregenerator.leave")) sender.sendMessage(ChatColor.YELLOW + "/arena leave " + ChatColor.GRAY + "- Leaves the current minigame arena.");
+        if (sender.hasPermission("arenaregenerator.reload")) sender.sendMessage(ChatColor.YELLOW + "/arena reload " + ChatColor.GRAY + "- Reloads the plugin configuration.");
         sender.sendMessage(ChatColor.GOLD + "---------------------------------");
     }
 }
