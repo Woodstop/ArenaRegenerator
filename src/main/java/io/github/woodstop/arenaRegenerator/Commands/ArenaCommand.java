@@ -1,6 +1,8 @@
 package io.github.woodstop.arenaRegenerator.Commands;
 
 import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
+import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
+import io.github.woodstop.arenaRegenerator.Minigame.MinigameArena;
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -28,12 +30,25 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
     private final LeaveArenaCommand leaveArenaCommand = new LeaveArenaCommand();
     private final JoinArenaCommand joinArenaCommand = new JoinArenaCommand();
     private final ReloadCommand reloadCommand = new ReloadCommand();
+    private final SetSpawnCommand setSpawnCommand = new SetSpawnCommand();
+    private final DelSpawnCommand delSpawnCommand = new DelSpawnCommand();
 
     // ArenaDataManager for tab completion
-    private final ArenaDataManager dataManager = new ArenaDataManager();
+    private final ArenaDataManager arenaDataManager = new ArenaDataManager();
 
+    // MinigameManager for minigame operations and tab completion (minigame arenas)
+    private MinigameManager minigameManager;
+
+    public ArenaCommand() {
+        // MinigameManager needs to be initialized after plugin enables and managers are set up
+        // We'll get it from the plugin instance when needed.
+    }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+
+        // Initialize minigameManager here to ensure ArenaRegenerator is fully loaded
+        this.minigameManager = ArenaRegenerator.getInstance().getMinigameManager();
+
         if (args.length == 0) {
             sendHelpMessage(sender);
             return true;
@@ -50,7 +65,7 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
             case "clear":
                 return clearArenaCommand.onCommand(sender, command, label, subArgs);
             case "list":
-                return arenaListCommand.onCommand(sender, command, label, subArgs); // List command might not use subArgs, but pass anyway
+                return arenaListCommand.onCommand(sender, command, label, subArgs);
             case "delete":
                 return deleteArenaCommand.onCommand(sender, command, label, subArgs);
             case "info":
@@ -63,6 +78,10 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
                 return leaveArenaCommand.onCommand(sender, command, label, subArgs);
             case "reload":
                 return reloadCommand.onCommand(sender, command, label, subArgs);
+            case "setspawn":
+                return setSpawnCommand.onCommand(sender, command, label, subArgs);
+            case "delspawn":
+                return delSpawnCommand.onCommand(sender, command, label, subArgs);
             default:
                 sendHelpMessage(sender);
                 return true;
@@ -71,7 +90,12 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @NotNull List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+
+        this.minigameManager = ArenaRegenerator.getInstance().getMinigameManager();
+
         List<String> completions = new ArrayList<>();
+        String partialArg = args[args.length - 1].toLowerCase();
+
         if (args.length == 1) {
             // Top-level sub-commands
             if (sender.hasPermission("arenaregenerator.save")) completions.add("save");
@@ -84,21 +108,48 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("arenaregenerator.leave")) completions.add("leave");
             if (sender.hasPermission("arenaregenerator.join")) completions.add("join");
             if (sender.hasPermission("arenaregenerator.reload")) completions.add("reload");
+            if (sender.hasPermission("arenaregenerator.setspawn")) completions.add("setspawn");
+            if (sender.hasPermission("arenaregenerator.delspawn")) completions.add("delspawn");
+
             return completions.stream()
-                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+                    .filter(s -> s.startsWith(partialArg))
                     .collect(Collectors.toList());
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            if (subCommand.equals("regen") || subCommand.equals("clear") || subCommand.equals("delete") || subCommand.equals("info") || subCommand.equals("select") || subCommand.equals("join")) {
-                // For commands requiring an arena name, suggest existing arena names
-                try {
-                    return dataManager.loadArenasJson().keySet().stream()
-                            .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                } catch (IOException e) {
-                    ArenaRegenerator.getInstance().getLogger().warning("Error loading arena names for tab completion: " + e.getMessage());
-                    return Collections.emptyList();
-                }
+            switch (subCommand) {
+                case "save":
+                case "regen":
+                case "clear":
+                case "delete":
+                case "info":
+                case "select":
+                    // Suggest existing saved arena names from ArenaDataManager
+                    return getSavedArenaNameCompletions(partialArg);
+                case "join":
+                case "delspawn":
+                case "setspawn":
+                    // Suggest configured minigame arena names from MinigameManager
+                    return getMinigameArenaNameCompletions(partialArg);
+            }
+        } else if (args.length == 3) {
+            String subCommand = args[0].toLowerCase();
+            String arenaName = args[1].toLowerCase(); // The arena name already typed
+
+            switch (subCommand) {
+                case "setspawn":
+                case "delspawn":
+                    // For setspawn, suggest spawn types (lobby, exit, spectator, game)
+                    return getSpawnTypeCompletions(partialArg);
+            }
+        } else if (args.length == 4) { // For /arena setspawn <arenaName> game <spawnName>
+            String subCommand = args[0].toLowerCase();
+            String spawnType = args[2].toLowerCase();
+            String arenaName = args[1].toLowerCase();
+
+            if (subCommand.equals("setspawn") && spawnType.equals("game")) {
+                return Collections.singletonList("[spawnName]");
+            } else if (subCommand.equals("delspawn") && spawnType.equals("game")) {
+                return getGameSpawnPointNameCompletions(arenaName, partialArg);
             }
         }
         return Collections.emptyList();
@@ -116,6 +167,63 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission("arenaregenerator.join")) sender.sendMessage(ChatColor.YELLOW + "/arena join <arenaName> " + ChatColor.GRAY + "- Joins a minigame arena.");
         if (sender.hasPermission("arenaregenerator.leave")) sender.sendMessage(ChatColor.YELLOW + "/arena leave " + ChatColor.GRAY + "- Leaves the current minigame arena.");
         if (sender.hasPermission("arenaregenerator.reload")) sender.sendMessage(ChatColor.YELLOW + "/arena reload " + ChatColor.GRAY + "- Reloads the plugin configuration.");
+        if (sender.hasPermission("arenaregenerator.setspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena setspawn <arenaName> <lobby|exit|spectator|game> " + ChatColor.GRAY + "- Sets a specific spawn point.");
+        if (sender.hasPermission("arenaregenerator.delspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena delspawn <arenaName> <lobby|exit|spectator|game> [spawnName] " + ChatColor.GRAY + "- Deletes a named game spawn point.");
         sender.sendMessage(ChatColor.GOLD + "---------------------------------");
     }
+
+    /**
+     * Helper to get completions for saved arena names (from ArenaDataManager).
+     * @param partialName The partial name typed by the user.
+     * @return A list of matching arena names.
+     */
+    private List<String> getSavedArenaNameCompletions(String partialName) {
+        try {
+            return arenaDataManager.loadArenasJson().keySet().stream()
+                    .filter(s -> s.toLowerCase().startsWith(partialName))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            ArenaRegenerator.getInstance().getLogger().warning("Error loading saved arena names for tab completion: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Helper to get completions for configured minigame arena names (from MinigameManager).
+     * @param partialName The partial name typed by the user.
+     * @return A list of matching minigame arena names.
+     */
+    private List<String> getMinigameArenaNameCompletions(String partialName) {
+        return minigameManager.getConfiguredMinigameNames().stream()
+                .filter(s -> s.toLowerCase().startsWith(partialName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper to get completions for spawn types (lobby, exit, spectator).
+     * @param partialName The partial name typed by the user.
+     * @return A list of matching spawn types.
+     */
+    private List<String> getSpawnTypeCompletions(String partialName) {
+        return Arrays.asList("lobby", "exit", "spectator", "game").stream()
+                .filter(s -> s.startsWith(partialName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper to get completions for game spawn point names within a specific arena.
+     * @param arenaName The name of the arena.
+     * @param partialName The partial name typed by the user.
+     * @return A list of matching game spawn point names.
+     */
+    private List<String> getGameSpawnPointNameCompletions(String arenaName, String partialName) {
+        MinigameArena arena = minigameManager.getMinigameArena(arenaName);
+        if (arena != null) {
+            return arena.getGameSpawnPointNames().stream()
+                    .filter(s -> s.toLowerCase().startsWith(partialName))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
 }

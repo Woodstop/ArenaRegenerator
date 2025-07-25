@@ -2,6 +2,8 @@ package io.github.woodstop.arenaRegenerator;
 
 import io.github.woodstop.arenaRegenerator.Commands.*;
 import io.github.woodstop.arenaRegenerator.Listeners.ArenaSignListener;
+import io.github.woodstop.arenaRegenerator.Listeners.MinigameBlockListener;
+import io.github.woodstop.arenaRegenerator.Listeners.MinigameDamageListener;
 import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.Bukkit;
@@ -12,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public final class ArenaRegenerator extends JavaPlugin {
 
@@ -27,7 +30,6 @@ public final class ArenaRegenerator extends JavaPlugin {
         // Plugin startup logic
         instance = this;
         getLogger().info("ArenaRegenerator enabled!");
-        reloadPlugin();
 
         // Ensure data folder exists
         if (!getDataFolder().exists()) {
@@ -52,14 +54,30 @@ public final class ArenaRegenerator extends JavaPlugin {
             return; // Stop further initialization
         }
 
-        this.minigameManager = new MinigameManager(this, arenaDataManager);
+        loadMinigameConfigs();
+        try {
+            this.minigameManager = new MinigameManager(this, arenaDataManager);
+            getLogger().info("[ArenaRegenerator] MinigameManager initialized: " + this.minigameManager.hashCode());
+        } catch (Exception e) {
+            getLogger().severe("[ArenaRegenerator] Failed to initialize MinigameManager: " + e.getMessage());
+            getLogger().severe("[ArenaRegenerator] Minigame features will be unavailable.");
+            this.minigameManager = null;
+            // It's critical to disable the plugin or handle this gracefully if minigame features are essential
+            // For now, we'll allow it to continue but minigame features won't work.
+        }
 
         // Register the main ArenaCommand and its TabCompleter
         ArenaCommand arenaCommandExecutor = new ArenaCommand();
         getCommand("arena").setExecutor(arenaCommandExecutor);
         getCommand("arena").setTabCompleter(arenaCommandExecutor);
 
-        getServer().getPluginManager().registerEvents(new ArenaSignListener(),this);
+        getServer().getPluginManager().registerEvents(new ArenaSignListener(), this); // ArenaSignListener does not directly depend on MinigameManager
+        if (minigameManager != null) {
+            getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);   // Pass manager
+            getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this); // Pass manager
+        } else {
+            getLogger().warning("[ArenaRegenerator] MinigameManager is null, skipping registration of minigame-specific listeners.");
+        }
     }
 
     @Override
@@ -70,9 +88,11 @@ public final class ArenaRegenerator extends JavaPlugin {
 
         // Unregister listeners
         HandlerList.unregisterAll(this);
+        if (minigameManager != null) { // Ensure manager exists before shutting down
+            minigameManager.shutdown();
+        }
 
-        // Save config if modified
-        this.saveConfig();
+        getLogger().info("[ArenaRegenerator] Plugin disabled!");
 
     }
 
@@ -80,18 +100,26 @@ public final class ArenaRegenerator extends JavaPlugin {
      * Loads all minigame configurations from the config.yml.
      */
     private void loadMinigameConfigs() {
-        minigameConfigs.clear();
+        getLogger().info("[ArenaRegenerator] Loading minigame configurations from config.yml...");
+        minigameConfigs.clear(); // Clear previous configs on reload
         ConfigurationSection minigamesSection = getConfig().getConfigurationSection("minigames");
         if (minigamesSection != null) {
-            for (String arenaName : minigamesSection.getKeys(false)) { // false means only direct children
+            Set<String> keys = minigamesSection.getKeys(false);
+            if (keys.isEmpty()) {
+                getLogger().warning("[ArenaRegenerator] 'minigames' section found, but it contains no arena configurations.");
+            } else {
+                getLogger().info("[ArenaRegenerator] Found " + keys.size() + " minigame arena configurations: " + keys);
+            }
+
+            for (String arenaName : keys) {
                 ConfigurationSection arenaConfig = minigamesSection.getConfigurationSection(arenaName);
                 if (arenaConfig != null) {
                     minigameConfigs.put(arenaName, arenaConfig);
-                    getLogger().info("Loaded minigame configuration for arena: " + arenaName);
+                    // Detailed logging for each arena is now in MinigameManager's loadConfiguredMinigames
                 }
             }
         } else {
-            getLogger().warning("No 'minigames' section found in config.yml. Minigame features will not be available.");
+            getLogger().warning("[ArenaRegenerator] No 'minigames' section found in config.yml. Minigame features might not be fully available.");
         }
     }
 
@@ -120,6 +148,9 @@ public final class ArenaRegenerator extends JavaPlugin {
         return minigameManager;
     }
 
+    public ArenaDataManager getArenaDataManager() {
+        return arenaDataManager;
+    }
     public static ArenaRegenerator getInstance() {
         return instance;
     }
@@ -132,19 +163,32 @@ public final class ArenaRegenerator extends JavaPlugin {
      * This method can be called by a command.
      */
     public void reloadPlugin() {
+        getLogger().info("[ArenaRegenerator] Reloading plugin configuration...");
         // Reload the config file from disk
         reloadConfig();
-        getLogger().info("Configuration reloaded.");
+        getLogger().info("[ArenaRegenerator] Configuration file reloaded from disk.");
 
-        // Reload minigame configurations
+        // Reload minigame configurations into ArenaRegenerator's internal map
         loadMinigameConfigs();
 
-        // Re-initialize MinigameManager to pick up new configs
-        // This will cancel existing tasks and re-load arenas
-        if (minigameManager != null) {
-            minigameManager.shutdown(); // Gracefully shut down current manager (cancel tasks, etc.)
+        HandlerList.unregisterAll(this);
+
+        // Recreate manager
+        try {
+            this.minigameManager = new MinigameManager(this, arenaDataManager);
+            getLogger().info("[ArenaRegenerator] New MinigameManager initialized.");
+        } catch (Exception e) {
+            getLogger().severe("[ArenaRegenerator] Failed to initialize MinigameManager: " + e.getMessage());
+            this.minigameManager = null;
         }
-        this.minigameManager = new MinigameManager(this, arenaDataManager);
-        getLogger().info("MinigameManager re-initialized.");
+
+        // Re-register listeners
+        getServer().getPluginManager().registerEvents(new ArenaSignListener(), this);
+        if (minigameManager != null) {
+            getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);
+            getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this);
+        } else {
+            getLogger().warning("[ArenaRegenerator] MinigameManager is null, skipping registration of minigame-specific listeners.");
+        }
     }
 }

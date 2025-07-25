@@ -7,18 +7,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * Represents a single instance of a minigame arena, managing its state, players, and game flow.
@@ -41,27 +47,34 @@ public class MinigameArena {
     private final Location exitSpawn;
     private final Location spectatorSpawn;
     private final boolean clearInventoryOnJoin;
+    private final List<ItemStack> itemsOnJoin;
     private final GameMode gameModeOnJoin;
-    private final boolean preventBlockBreak;
-    private final boolean preventBlockPlace;
+    private final boolean allowItemDrops;
+
+    private final Set<Material> breakableBlocks;
+    private final Set<Material> placeableBlocks;
+
     private final boolean preventDamage;
 
     // Arena state
     private final List<UUID> playersInLobby; // Players waiting in lobby
     private final List<UUID> playersInGame;  // Players currently playing
     private final List<UUID> playersSpectating; // Players spectating
+    private final Set<UUID> playersWhoParticipatedThisRound; // Players who participated this round
     private GameState currentState;
     private BukkitTask countdownTask;
     private BukkitTask gameTimerTask;
     private int currentCountdown;
     private int currentGameTime;
-
+    private final Region arenaRegion;
     // Enum for game states
     public enum GameState {
         WAITING, COUNTDOWN, IN_GAME, ENDING
     }
+    private long gameStartTick; // To store the server tick when the game officially started
+    private final int BOUNDARY_CHECK_GRACE_PERIOD_TICKS = 40; // 2 seconds grace period (20 ticks per second)
 
-    public MinigameArena(ArenaRegenerator plugin, String arenaName, ConfigurationSection config, ArenaDataManager arenaDataManager) {
+    public MinigameArena(ArenaRegenerator plugin, String arenaName, ConfigurationSection config, ArenaDataManager arenaDataManager) throws IOException {
         this.plugin = plugin;
         this.arenaName = arenaName;
         this.config = config;
@@ -74,52 +87,57 @@ public class MinigameArena {
         this.lobbyCountdownSeconds = config.getInt("lobby-countdown-seconds", 10);
         this.restorePlayerStateOnExit = config.getBoolean("restore-player-state-on-exit", true);
 
-        this.lobbySpawn = parseLocation(config.getConfigurationSection("lobby-spawn"));
-        this.exitSpawn = parseLocation(config.getConfigurationSection("exit-spawn"));
-        this.spectatorSpawn = parseLocation(config.getConfigurationSection("spectator-spawn"));
+        this.lobbySpawn = arenaDataManager.loadSpawnLocation(arenaName, "lobby-spawn");
+        this.exitSpawn = arenaDataManager.loadSpawnLocation(arenaName, "exit-spawn");
+        this.spectatorSpawn = arenaDataManager.loadSpawnLocation(arenaName, "spectator-spawn");
+        this.gameSpawnPoints = arenaDataManager.loadGameSpawnPoints(arenaName);
 
-        this.gameSpawnPoints = new HashMap<>();
-        ConfigurationSection spawnPointsSection = config.getConfigurationSection("game-spawn-points");
-        if (spawnPointsSection != null) {
-            for (String spawnName : spawnPointsSection.getKeys(false)) {
-                Location spawnLoc = parseLocation(spawnPointsSection.getConfigurationSection(spawnName));
-                if (spawnLoc != null) {
-                    this.gameSpawnPoints.put(spawnName, spawnLoc);
-                } else {
-                    plugin.getLogger().warning("Invalid game spawn point '" + spawnName + "' for arena '" + arenaName + "' in config.yml.");
-                }
-            }
-        }
+        // Log loaded spawn points for debugging
+        if (this.lobbySpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Lobby spawn not set in arenas.json.");
+        if (this.exitSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Exit spawn not set in arenas.json.");
+        if (this.spectatorSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Spectator spawn not set in arenas.json.");
+        if (this.gameSpawnPoints.isEmpty()) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': No game spawn points set in arenas.json.");
 
         this.clearInventoryOnJoin = config.getBoolean("clear-inventory-on-join", true);
+        this.itemsOnJoin = loadItemsOnJoin();
         this.gameModeOnJoin = GameMode.valueOf(config.getString("game-mode-on-join", "ADVENTURE").toUpperCase());
-        this.preventBlockBreak = config.getBoolean("prevent-block-break", true);
-        this.preventBlockPlace = config.getBoolean("prevent-block-place", true);
-        this.preventDamage = config.getBoolean("prevent-damage", false);
+        this.breakableBlocks = config.getStringList("breakable-blocks").stream()
+                .map(s -> {
+                    try {
+                        return Material.valueOf(s.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().warning("Invalid material name '" + s + "' in breakable-blocks for arena '" + arenaName + "'. Skipping.");
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        this.placeableBlocks = config.getStringList("placeable-blocks").stream()
+                .map(s -> {
+                    try {
+                        return Material.valueOf(s.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().warning("Invalid material name '" + s + "' in placeable-blocks for arena '" + arenaName + "'. Skipping.");
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        this.preventDamage = config.getBoolean("prevent-damage", true);
+        this.allowItemDrops = config.getBoolean("item-drops", true);
 
         this.playersInLobby = new ArrayList<>();
         this.playersInGame = new ArrayList<>();
         this.playersSpectating = new ArrayList<>();
+        this.playersWhoParticipatedThisRound = new HashSet<>();
         this.currentState = GameState.WAITING;
-    }
 
-    /**
-     * Helper to parse a Location from a ConfigurationSection.
-     */
-    private Location parseLocation(ConfigurationSection section) {
-        if (section == null) return null;
-        String worldName = section.getString("world");
-        org.bukkit.World world = Bukkit.getWorld(worldName);
-        if (world == null) {
-            plugin.getLogger().warning("World '" + worldName + "' for arena '" + arenaName + "' is not loaded or does not exist!");
-            return null;
+        this.arenaRegion = arenaDataManager.getMinigamePlayableRegion(arenaName);
+        if (this.arenaRegion == null) {
+            throw new IOException("Failed to load WorldEdit region for arena '" + arenaName + "'. Ensure it's saved correctly and its world is loaded.");
         }
-        double x = section.getDouble("x");
-        double y = section.getDouble("y");
-        double z = section.getDouble("z");
-        float yaw = (float) section.getDouble("yaw", 0.0);
-        float pitch = (float) section.getDouble("pitch", 0.0);
-        return new Location(world, x, y, z, yaw, pitch);
     }
 
     /**
@@ -136,8 +154,14 @@ public class MinigameArena {
             player.sendMessage(ChatColor.YELLOW + "You are already in the lobby for this arena.");
             return false;
         }
+        if (lobbySpawn == null) { // NEW: Check if lobby spawn is set
+            player.sendMessage(ChatColor.RED + "Lobby spawn not set for this arena. Cannot join.");
+            plugin.getLogger().warning("Player " + player.getName() + " tried to join arena " + arenaName + " but lobby spawn is null.");
+            return false;
+        }
 
         playersInLobby.add(player.getUniqueId());
+        playersWhoParticipatedThisRound.add(player.getUniqueId());
         player.teleport(lobbySpawn);
         applyPlayerSettingsOnJoin(player);
         player.sendMessage(ChatColor.GREEN + "Welcome to the lobby for " + arenaName + "!");
@@ -170,18 +194,29 @@ public class MinigameArena {
         if (clearInventoryOnJoin) {
             player.getInventory().clear();
             player.getInventory().setArmorContents(null); // Clear armor
+
         }
-        player.setGameMode(gameModeOnJoin);
-        player.setHealth(player.getMaxHealth());
+
+        player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getValue());
         player.setFoodLevel(20);
         player.setSaturation(20.0f);
         player.setFireTicks(0);
         player.setFallDistance(0);
         player.setExp(0);
         player.setLevel(0);
-        player.setFlying(false);
-        player.setAllowFlight(false);
         player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                // Re-check if player is still online before setting game mode
+                if (player.isOnline()) {
+                    player.setGameMode(gameModeOnJoin);
+                    player.setFlying(false);
+                    player.setAllowFlight(false);
+                }
+            }
+        }.runTaskLater(plugin, 1L); // Run 1 tick later
     }
 
     /**
@@ -217,7 +252,7 @@ public class MinigameArena {
                 broadcast(ChatColor.YELLOW + "Game starts in " + currentCountdown + " seconds...");
             }
             currentCountdown--;
-        }, 0L, 20L); // Every 1 second (20 ticks)
+        }, 3L, 20L); // Every 1 second (20 ticks)
     }
 
     /**
@@ -249,6 +284,12 @@ public class MinigameArena {
             if (p != null && !availableSpawns.isEmpty()) {
                 p.teleport(availableSpawns.get(i % availableSpawns.size())); // Cycle through spawns
                 p.sendMessage(ChatColor.GREEN + "The game has started!");
+
+                // Give configured items
+                for (ItemStack item : itemsOnJoin) {
+                    p.getInventory().addItem(item.clone()); // Use clone to prevent modifying the original ItemStack
+                }
+
             } else if (p != null) {
                 p.sendMessage(ChatColor.RED + "No spawn points configured for this arena!");
                 // Teleport to lobby spawn if game spawn points are missing
@@ -257,6 +298,7 @@ public class MinigameArena {
         }
 
         broadcast(ChatColor.GREEN + "The game is now in progress!");
+        this.gameStartTick = plugin.getServer().getCurrentTick(); // Record the exact tick the game started
         startArenaTimer();
     }
 
@@ -268,8 +310,47 @@ public class MinigameArena {
         gameTimerTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (currentGameTime <= 0) {
                 endGame();
-                gameTimerTask.cancel();
                 return;
+            }
+
+            if (currentState == GameState.IN_GAME && (plugin.getServer().getCurrentTick() - gameStartTick) > BOUNDARY_CHECK_GRACE_PERIOD_TICKS) {
+                for (UUID uuid : playersInGame) {
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p != null && !isInsideArena(p)) {
+                        // If this player's elimination means only one or zero players are left in-game
+                        if (playersInGame.size() <= 2) { // If current in-game players is 2 (this player + 1 other), or 1 (only this player)
+                            playersInGame.remove(uuid);
+                            endGame();
+                            return;
+                        } else {
+                            // More than 2 players, so this player goes to spectator
+                            p.sendMessage(ChatColor.RED + "You are now spectating!");
+                            // Remove from in-game, add to spectating
+                            playersInGame.remove(uuid);
+                            playersSpectating.add(uuid);
+
+                            // Teleport to spectator spawn and set gamemode
+                            if (spectatorSpawn != null) {
+                                p.teleport(spectatorSpawn);
+                            } else {
+                                // Fallback to a random game spawn point if spectator spawn is not set
+                                Location randomGameSpawn = getRandomGameSpawnPoint();
+                                if (randomGameSpawn != null) {
+                                    p.sendMessage(ChatColor.YELLOW + "No spectator spawn set. Teleporting to a game spawn point.");
+                                    p.teleport(randomGameSpawn);
+                                    plugin.getLogger().warning("No spectator spawn set for arena " + arenaName + ". Player " + p.getName() + " was teleported to a random game spawn.");
+                                }
+                            }
+                            p.setGameMode(GameMode.SPECTATOR);
+                            p.getInventory().clear(); // Clear inventory for spectators
+                            p.getInventory().setArmorContents(null);
+                        }
+                    }
+                }
+                // After iterating through all players, re-check end condition if game hasn't already ended
+                // This is important for scenarios like time running out, or the last player leaving voluntarily
+                // or if multiple players leave bounds in quick succession but the game didn't end on the first one.
+                checkEndCondition();
             }
 
             // Example: Broadcast time remaining
@@ -277,7 +358,7 @@ public class MinigameArena {
                 broadcast(ChatColor.YELLOW + "Time remaining: " + currentGameTime + " seconds.");
             }
             currentGameTime--;
-        }, 0L, 20L); // Every 1 second (20 ticks)
+        }, 5L, 20L); // Every 1 second (20 ticks)
     }
 
     /**
@@ -296,14 +377,7 @@ public class MinigameArena {
         if (currentState == GameState.ENDING) return; // Prevent double ending
         currentState = GameState.ENDING;
 
-        if (gameTimerTask != null) {
-            gameTimerTask.cancel();
-            gameTimerTask = null;
-        }
-        if (countdownTask != null) {
-            countdownTask.cancel();
-            countdownTask = null;
-        }
+       cancelAllTasks();
 
         String winnerName = "No one";
         if (playersInGame.size() == 1) {
@@ -313,21 +387,17 @@ public class MinigameArena {
                 winner.sendMessage(ChatColor.GOLD + "Congratulations! You won the game in " + arenaName + "!");
             }
         }
-        broadcast(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + winnerName);
 
-        // Teleport all remaining players out and restore state
-        List<UUID> allPlayers = new ArrayList<>();
-        allPlayers.addAll(playersInGame);
-        allPlayers.addAll(playersInLobby); // Players still in lobby if game ended early
-        allPlayers.addAll(playersSpectating);
-
-        for (UUID uuid : allPlayers) {
+        // Broadcasts winner to all players
+        final String finalWinnerName = winnerName;
+        playersWhoParticipatedThisRound.forEach(uuid -> {
             Player p = Bukkit.getPlayer(uuid);
-            if (p != null) {
-                // Delegate to MinigameManager to handle restoration/teleport
-                plugin.getMinigameManager().leaveMinigame(p, arenaName, restorePlayerStateOnExit);
+            if (p != null) { // Only send if player is still online
+                p.sendMessage(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + finalWinnerName);
+                plugin.getMinigameManager().leaveMinigame(p, restorePlayerStateOnExit);
             }
-        }
+        });
+
         playersInLobby.clear();
         playersInGame.clear();
         playersSpectating.clear();
@@ -345,6 +415,7 @@ public class MinigameArena {
         // Dispatch commands as console to use existing logic
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena clear " + arenaName);
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena regen " + arenaName);
+        playersWhoParticipatedThisRound.clear();
     }
 
     /**
@@ -384,6 +455,56 @@ public class MinigameArena {
         cancelTask(gameTimerTask);
         countdownTask = null;
         gameTimerTask = null;
+    }
+
+    /**
+     * Checks if a player is currently inside the defined WorldEdit region of this arena.
+     * @param player The player to check.
+     * @return true if the player is inside the arena region, false otherwise.
+     */
+    private boolean isInsideArena(Player player) {
+        if (arenaRegion == null || !arenaRegion.getWorld().getName().equals(player.getWorld().getName())) {
+            // If arena region is not defined, or player is in a different world, consider them outside for safety
+            return false;
+        }
+        // Check if the player's current block location is within the arena region
+        return arenaRegion.contains(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ());
+    }
+
+    /**
+     * Loads the list of ItemStacks to be given to players upon joining from the config.
+     * @return A list of ItemStack objects.
+     */
+    private List<ItemStack> loadItemsOnJoin() {
+        List<ItemStack> loadedItems = new ArrayList<>();
+        List<String> itemStrings = config.getStringList("give-item-on-join");
+        for (String itemString : itemStrings) {
+            try {
+                String[] parts = itemString.split(":");
+                Material material = Material.valueOf(parts[0].toUpperCase());
+                int amount = 1;
+                if (parts.length > 1) {
+                    amount = Integer.parseInt(parts[1]);
+                }
+                loadedItems.add(new ItemStack(material, amount));
+                plugin.getLogger().info("[MinigameArena] Arena '" + arenaName + "': Configured to give item: " + itemString);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Invalid item string in config 'give-item-on-join': " + itemString + ". Skipping this item.");
+            }
+        }
+        return loadedItems;
+    }
+
+    /**
+     * Retrieves a random game spawn point from the configured list.
+     * @return A random Location from gameSpawnPoints, or null if no game spawn points are configured.
+     */
+    private Location getRandomGameSpawnPoint() {
+        if (gameSpawnPoints.isEmpty()) {
+            return null;
+        }
+        List<Location> spawns = new ArrayList<>(gameSpawnPoints.values());
+        return spawns.get(ThreadLocalRandom.current().nextInt(spawns.size()));
     }
 
     // --- Getters for MinigameManager and other classes to use ---
@@ -435,7 +556,31 @@ public class MinigameArena {
         return new ArrayList<>(gameSpawnPoints.values());
     }
 
+    /**
+     * Returns a set of the names of all configured game spawn points for this arena.
+     * @return A Set of String representing the names of game spawn points.
+     */
+    public Set<String> getGameSpawnPointNames() {
+        return gameSpawnPoints.keySet();
+    }
+
     public boolean isRestorePlayerStateOnExit() {
         return restorePlayerStateOnExit;
+    }
+
+    public Set<Material> getBreakableBlocks() {
+        return Collections.unmodifiableSet(breakableBlocks); // Return unmodifiable set
+    }
+
+    public Set<Material> getPlaceableBlocks() {
+        return Collections.unmodifiableSet(placeableBlocks); // Return unmodifiable set
+    }
+
+    public boolean getPreventDamage() {
+        return preventDamage;
+    }
+
+    public boolean getAllowItemDrops() {
+        return allowItemDrops;
     }
 }

@@ -23,14 +23,17 @@ public class MinigameManager {
     private final ArenaDataManager arenaDataManager;
     // Map of arenaName -> MinigameArena instance
     private final Map<String, MinigameArena> activeMinigames;
-    // Map of Player -> PlayerRestoreData for players currently in a minigame
+    // Map of Player UUID -> PlayerRestoreData for players currently in a minigame
     private final Map<UUID, PlayerRestoreData> playerRestoreDataMap;
+    // Map of Player UUID -> Arena Name for tracking which arena a player is currently in
+    private final Map<UUID, String> playerCurrentArenaMap;
 
     public MinigameManager(ArenaRegenerator plugin, ArenaDataManager arenaDataManager) {
         this.plugin = plugin;
         this.arenaDataManager = arenaDataManager;
         this.activeMinigames = new HashMap<>();
         this.playerRestoreDataMap = new HashMap<>();
+        this.playerCurrentArenaMap = new HashMap<>();
         loadConfiguredMinigames();
     }
 
@@ -38,12 +41,19 @@ public class MinigameManager {
      * Loads minigame configurations from the plugin's config and initializes MinigameArena instances.
      */
     private void loadConfiguredMinigames() {
+        // Clear any existing minigame instances before reloading
+        activeMinigames.values().forEach(MinigameArena::cancelAllTasks); // Cancel tasks for existing arenas
+        activeMinigames.clear();
+
         Set<String> arenaNames = plugin.getMinigameArenaNames();
+        if (arenaNames.isEmpty()) {
+            plugin.getLogger().warning("No minigame arenas found in configuration or all are disabled.");
+        }
+
         for (String arenaName : arenaNames) {
             ConfigurationSection arenaConfig = plugin.getMinigameConfig(arenaName);
             if (arenaConfig != null && arenaConfig.getBoolean("enabled", false)) {
                 try {
-                    // Initialize MinigameArena but don't activate it yet
                     MinigameArena minigameArena = new MinigameArena(plugin, arenaName, arenaConfig, arenaDataManager);
                     activeMinigames.put(arenaName, minigameArena);
                     plugin.getLogger().info("Minigame arena '" + arenaName + "' loaded and ready.");
@@ -51,6 +61,10 @@ public class MinigameManager {
                     plugin.getLogger().severe("Failed to load minigame arena '" + arenaName + "': " + e.getMessage());
                     e.printStackTrace();
                 }
+            } else if (arenaConfig != null) {
+                plugin.getLogger().info("Minigame arena '" + arenaName + "' found but is disabled (enabled: false).");
+            } else {
+                plugin.getLogger().warning("Minigame arena '" + arenaName + "' defined in plugin's internal map but config section not found.");
             }
         }
     }
@@ -62,7 +76,7 @@ public class MinigameManager {
      * @return true if the player successfully joined, false otherwise.
      */
     public boolean joinMinigame(Player player, String arenaName) {
-        if (playerRestoreDataMap.containsKey(player)) {
+        if (playerRestoreDataMap.containsKey(player.getUniqueId())) {
             player.sendMessage(ChatColor.RED + "You are already in a minigame!");
             return false;
         }
@@ -78,11 +92,12 @@ public class MinigameManager {
 
         // Delegate the actual join logic to the MinigameArena instance
         if (arena.addPlayer(player)) {
+            playerCurrentArenaMap.put(player.getUniqueId(), arenaName); // Track which arena the player is in
             player.sendMessage(ChatColor.GREEN + "You joined minigame arena: " + ChatColor.WHITE + arenaName);
             return true;
         } else {
             // If addPlayer failed, remove restore data as player didn't fully join
-            playerRestoreDataMap.remove(player);
+            playerRestoreDataMap.remove(player.getUniqueId());
             return false;
         }
     }
@@ -90,16 +105,24 @@ public class MinigameManager {
     /**
      * Attempts to remove a player from a minigame arena and restore their state.
      * @param player The player to remove.
-     * @param arenaName The name of the arena the player is in.
      * @param restoreState Whether to restore player's state or teleport to exit spawn.
      */
-    public void leaveMinigame(Player player, String arenaName, boolean restoreState) {
+    public void leaveMinigame(Player player, boolean restoreState) {
+        String arenaName = playerCurrentArenaMap.remove(player.getUniqueId()); // Get arena name from map and remove
+        if (arenaName == null) {
+            player.sendMessage(ChatColor.RED + "You are not currently in a minigame.");
+            return;
+        }
+
         MinigameArena arena = activeMinigames.get(arenaName);
         if (arena != null) {
             arena.removePlayer(player);
+        } else {
+            plugin.getLogger().warning("Arena " + arenaName + " not found in activeMinigames when " + player.getName() + " tried to leave.");
         }
 
-        PlayerRestoreData restoreData = playerRestoreDataMap.remove(player);
+        PlayerRestoreData restoreData = playerRestoreDataMap.remove(player.getUniqueId());
+
         if (restoreData != null && restoreState) {
             restoreData.restore(player);
             player.sendMessage(ChatColor.GREEN + "Your state has been restored!");
@@ -117,13 +140,13 @@ public class MinigameManager {
      * @return true if the player is in a minigame, false otherwise.
      */
     public boolean isPlayerInMinigame(Player player) {
-        return playerRestoreDataMap.containsKey(player);
+        return playerCurrentArenaMap.containsKey(player.getUniqueId());
     }
 
     /**
      * Gets the MinigameArena instance by name.
      * @param arenaName The name of the arena.
-     * @return The MinigameArena instance, or null if not found.
+     * @return The MinigameArena instance, or null if not found or not enabled.
      */
     public MinigameArena getMinigameArena(String arenaName) {
         return activeMinigames.get(arenaName);
@@ -138,6 +161,23 @@ public class MinigameManager {
     }
 
     /**
+     * NEW: Gets the name of the arena a player is currently in.
+     * @param player The player to check.
+     * @return The name of the arena, or null if the player is not in an arena.
+     */
+    public String getPlayerArenaName(Player player) {
+        return playerCurrentArenaMap.get(player.getUniqueId());
+    }
+
+    /**
+     * Returns the main plugin instance.
+     * @return The ArenaRegenerator plugin instance.
+     */
+    public ArenaRegenerator getPlugin() {
+        return plugin;
+    }
+
+    /**
      * Shuts down the MinigameManager, canceling all active game tasks
      * and preparing for re-initialization or plugin disable.
      */
@@ -146,24 +186,28 @@ public class MinigameManager {
         activeMinigames.values().forEach(MinigameArena::cancelAllTasks);
         activeMinigames.clear(); // Clear the map of active minigames
 
-        // Force all players out and restore their state if they are still in a minigame
-        // This is important for /reload or plugin disable to prevent players getting stuck
-        for (UUID playerId : playerRestoreDataMap.keySet()) {
+        // Create a copy of playerRestoreDataMap entries before clearing maps
+        Map<UUID, PlayerRestoreData> playersToRestore = new HashMap<>(playerRestoreDataMap);
+
+        // Clear tracking maps immediately after copying data for restoration
+        playerRestoreDataMap.clear();
+        playerCurrentArenaMap.clear();
+
+        // Now, restore players using the copied data
+        for (Map.Entry<UUID, PlayerRestoreData> entry : playersToRestore.entrySet()) {
+            UUID playerId = entry.getKey();
+            PlayerRestoreData restoreData = entry.getValue();
             Player player = Bukkit.getPlayer(playerId);
             if (player != null) {
-                // Use the restore data directly, as the arena might be gone
-                PlayerRestoreData restoreData = playerRestoreDataMap.get(playerId);
                 if (restoreData != null) {
                     restoreData.restore(player);
                     player.sendMessage(ChatColor.YELLOW + "Minigame ended due to plugin reload/disable. Your state has been restored.");
                 } else {
-                    // Fallback teleport if restore data is somehow missing
                     player.teleport(player.getWorld().getSpawnLocation());
                     player.sendMessage(ChatColor.YELLOW + "Minigame ended due to plugin reload/disable. You have been teleported to spawn.");
                 }
             }
         }
-        playerRestoreDataMap.clear(); // Clear all restore data
         plugin.getLogger().info("MinigameManager shut down.");
     }
 }

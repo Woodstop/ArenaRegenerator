@@ -15,6 +15,8 @@ public class JoinArenaCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        this.minigameManager = ArenaRegenerator.getInstance().getMinigameManager();
+
         if (!(sender instanceof Player player)) {
             sender.sendMessage(ChatColor.RED + "Only players can use this command.");
             return true;
@@ -22,11 +24,6 @@ public class JoinArenaCommand implements CommandExecutor {
         if (args.length != 1) {
             player.sendMessage(ChatColor.RED + "Usage: /arena join <arenaName>");
             return true;
-        }
-
-        // Initialize minigameManager here to ensure ArenaRegenerator is fully loaded
-        if (minigameManager == null) {
-            minigameManager = ArenaRegenerator.getInstance().getMinigameManager();
         }
 
         String arenaName = args[0];

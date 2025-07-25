@@ -62,10 +62,30 @@ minigames:
 
     # Game-specific settings (e.g., for Spleef)
     clear-inventory-on-join: true
-    game-mode-on-join: ADVENTURE # SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR
-    prevent-block-break: true # Prevent breaking blocks outside the arena region
-    prevent-block-place: true # Prevent placing blocks outside the arena region
-    prevent-damage: false # Prevent damage during lobby/countdown
+
+    # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
+    give-item-on-join:
+      - DIAMOND_SHOVEL
+      - STONE_AXE:1 # Example: a stone axe with quantity 1
+      - LEATHER_HELMET
+      - LEATHER_CHESTPLATE
+      - LEATHER_LEGGINGS
+      - LEATHER_BOOTS
+      - COOKED_BEEF:16 # Example: 16 cooked beef
+
+    game-mode-on-join: SURVIVAL # SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR
+    # List of materials that players are allowed to break in this arena
+    breakable-blocks:
+      - SNOW_BLOCK
+      - ICE
+      - GLASS
+    # List of materials that players are allowed to place in this arena
+    placeable-blocks:
+      - COBBLESTONE
+      - DIRT
+      - SAND
+    prevent-damage: true # Prevent player vs player damage
+    item-drops: true # Allow item drops from blocks
 
   # You can add more arenas here following the same structure
   # my_other_spleef_arena:
@@ -97,7 +117,16 @@ minigames:
   #     y: 75.0
   #     z: 50.5
   #   clear-inventory-on-join: true
-  #   game-mode-on-join: ADVENTURE
+  # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
+  #    give-item-on-join:
+  #      - DIAMOND_SHOVEL
+  #      - STONE_AXE:1 # Example: a stone axe with quantity 1
+  #      - LEATHER_HELMET
+  #      - LEATHER_CHESTPLATE
+  #      - LEATHER_LEGGINGS
+  #      - LEATHER_BOOTS
+  #      - COOKED_BEEF:16 # Example: 16 cooked beef
+  #   game-mode-on-join: SURVIVAL
   #   prevent-block-break: true
   #   prevent-block-place: true
   #   prevent-damage: false

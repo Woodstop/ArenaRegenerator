@@ -24,6 +24,8 @@ permissions:
       arenaregenerator.join: true
       arenaregenerator.leave: true
       arenaregenerator.reload: true
+      arenaregenerator.setspawn: true
+      arenaregenerator.delspawn: true
   arenaregenerator.save:
     description: "Saves the specified region as a schematic"
     default: op
@@ -53,6 +55,12 @@ permissions:
     default: true
   arenaregenerator.reload:
     description: "Allows reloading the plugin configuration."
+    default: op
+  arenaregenerator.setspawn:
+    description: "Allows setting lobby, exit, and spectator spawns for minigames."
+    default: op
+  arenaregenerator.delspawn:
+    description: "Allows deleting spawn points for minigames."
     default: op
   arenaregenerator.sign.create:
     default: op
