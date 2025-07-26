@@ -4,6 +4,7 @@ import io.github.woodstop.arenaRegenerator.Commands.*;
 import io.github.woodstop.arenaRegenerator.Listeners.ArenaSignListener;
 import io.github.woodstop.arenaRegenerator.Listeners.MinigameBlockListener;
 import io.github.woodstop.arenaRegenerator.Listeners.MinigameDamageListener;
+import io.github.woodstop.arenaRegenerator.Listeners.MinigamePlayerListener;
 import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.Bukkit;
@@ -76,6 +77,7 @@ public final class ArenaRegenerator extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ArenaSignListener(), this); // ArenaSignListener does not directly depend on MinigameManager
         if (minigameManager != null) {
+            getServer().getPluginManager().registerEvents(new MinigamePlayerListener(minigameManager), this);
             getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);   // Pass manager
             getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this); // Pass manager
         } else {
