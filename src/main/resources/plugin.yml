@@ -62,11 +62,19 @@ permissions:
   arenaregenerator.delspawn:
     description: "Allows deleting spawn points for minigames."
     default: op
-  arenaregenerator.sign.create:
+  arenaregenerator.sign.create.regen:
     default: op
-  arenaregenerator.sign.use:
+  arenaregenerator.sign.create.join:
+    default: op
+  arenaregenerator.sign.create.leave:
+    default: op
+  arenaregenerator.sign.use.regen:
     default: op
   arenaregenerator.sign.bypass:
     default: op
   arenaregenerator.sign.break:
     default: op
+  arenaregenerator.sign.use.join:
+    default: true
+  arenaregenerator.sign.use.leave:
+    default: true

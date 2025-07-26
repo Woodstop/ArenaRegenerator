@@ -29,6 +29,9 @@ public final class ArenaRegenerator extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         instance = this;
+
+        // Save default config if not present
+        saveDefaultConfig();
         getLogger().info("ArenaRegenerator enabled!");
 
         // Ensure data folder exists
@@ -92,6 +95,7 @@ public final class ArenaRegenerator extends JavaPlugin {
             minigameManager.shutdown();
         }
 
+        saveConfig();
         getLogger().info("[ArenaRegenerator] Plugin disabled!");
 
     }

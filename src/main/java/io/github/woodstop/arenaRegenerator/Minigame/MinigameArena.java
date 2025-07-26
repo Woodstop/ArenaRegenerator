@@ -271,6 +271,7 @@ public class MinigameArena {
      * Starts the actual game.
      */
     private void startGame() {
+        resetArena();
         currentState = GameState.IN_GAME;
         playersInGame.addAll(playersInLobby); // Move players from lobby to game
         playersInLobby.clear();

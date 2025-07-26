@@ -41,11 +41,12 @@ public class ArenaSignListener implements Listener {
         String header = getSignLine(sign, 0);
         String arenaName = getSignLine(sign, 1);
 
-        // If the first line of the sign is not [RegenArena], stop
-        if (!header.equalsIgnoreCase("[RegenArena]")) return;
-
-        // Prevent the edit sign screen from opening
-        event.setCancelled(true);
+        // If the first line of the sign is not [RegenArena]. [JoinArena], or [LeaveArena], stop
+        if (header.equalsIgnoreCase("[RegenArena]") || header.equalsIgnoreCase("[JoinArena]") || header.equalsIgnoreCase("[LeaveArena]")) {
+            event.setCancelled(true); // prevent the edit screen from opening
+        } else {
+            return; // Not a recognized arena sign, so do nothing.
+        }
 
         Player player = event.getPlayer();
 
@@ -82,9 +83,48 @@ public class ArenaSignListener implements Listener {
             return;
         }
 
-        // Trigger your existing regen logic here:
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena regen " + arenaName);
-        player.sendMessage("§aRegenerating arena: " + arenaName);
+        // --- Handle different sign types ---
+        if (header.equalsIgnoreCase("[RegenArena]")) {
+            if (!player.hasPermission("arenaregenerator.sign.use.regen")) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to use RegenArena signs.");
+                return;
+            }
+            // Validate arena existence for Regen signs
+            try {
+                if (!dataManager.arenaExists(arenaName)) {
+                    player.sendMessage(ChatColor.RED + "Arena not found: " + arenaName);
+                    return;
+                }
+            } catch (IOException e) {
+                player.sendMessage(ChatColor.RED + "Error reading arena data. See console for details.");
+                e.printStackTrace();
+                return;
+            }
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena regen " + arenaName);
+            player.sendMessage(ChatColor.GREEN + "Regenerating arena: " + ChatColor.WHITE + arenaName);
+
+        } else if (header.equalsIgnoreCase("[JoinArena]")) {
+            if (!player.hasPermission("arenaregenerator.sign.use.join")) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to use JoinArena signs.");
+                return;
+            }
+            // For Join signs, arenaName is required
+            if (arenaName.isEmpty()) {
+                player.sendMessage(ChatColor.RED + "This JoinArena sign is not configured with an arena name on the second line.");
+                return;
+            }
+            // Dispatch the join command as the player to ensure proper permission checks by the command handler
+            Bukkit.dispatchCommand(player, "arena join " + arenaName);
+
+        } else if (header.equalsIgnoreCase("[LeaveArena]")) {
+            if (!player.hasPermission("arenaregenerator.sign.use.leave")) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to use LeaveArena signs.");
+                return;
+            }
+            // For Leave signs, no arenaName is needed on the second line, but we still read it.
+            // Dispatch the leave command as the player
+            Bukkit.dispatchCommand(player, "arena leave");
+        }
     }
 
     // Listener to change [RegenArena] to blue when typed and prevent players without permission from creating a sign
@@ -95,14 +135,26 @@ public class ArenaSignListener implements Listener {
                 : "";
 
         if (line0.equalsIgnoreCase("[RegenArena]")) {
-            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create")) {
+            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.regen")) {
                 event.setCancelled(true);
-                event.getPlayer().sendMessage("§cYou don’t have permission to create a RegenArena sign.");
+                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a RegenArena sign.");
                 return;
             }
-
-            String text = ChatColor.AQUA + "[RegenArena]";
-            event.setLine(0,text);
+            event.setLine(0, ChatColor.AQUA + "[RegenArena]");
+        } else if (line0.equalsIgnoreCase("[JoinArena]")) {
+            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.join"))  {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a JoinArena sign.");
+                return;
+            }
+            event.setLine(0, ChatColor.GREEN + "[JoinArena]");
+        } else if (line0.equalsIgnoreCase("[LeaveArena]")) {
+            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.leave")) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a LeaveArena sign.");
+                return;
+            }
+            event.setLine(0, ChatColor.RED + "[LeaveArena]");
         }
     }
 
@@ -113,12 +165,13 @@ public class ArenaSignListener implements Listener {
 
         String raw = getSignLine(sign, 0);
 
-        if (raw.equalsIgnoreCase("[RegenArena]") && !event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
-            event.setCancelled(true);
-            event.getPlayer().sendMessage("§cYou don't have permission to break this sign.");
+        if (raw.equalsIgnoreCase("[RegenArena]") || raw.equalsIgnoreCase("[JoinArena]") || raw.equalsIgnoreCase("[LeaveArena]")) {
+            if (!event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + "You don't have permission to break this sign.");
+            }
         }
     }
-
     /**
      * Helper method to get a sign line
      *
