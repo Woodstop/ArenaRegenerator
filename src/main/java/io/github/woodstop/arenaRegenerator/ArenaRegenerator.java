@@ -61,7 +61,6 @@ public final class ArenaRegenerator extends JavaPlugin {
         loadMinigameConfigs();
         try {
             this.minigameManager = new MinigameManager(this, arenaDataManager);
-            getLogger().info("[ArenaRegenerator] MinigameManager initialized: " + this.minigameManager.hashCode());
         } catch (Exception e) {
             getLogger().severe("[ArenaRegenerator] Failed to initialize MinigameManager: " + e.getMessage());
             getLogger().severe("[ArenaRegenerator] Minigame features will be unavailable.");
