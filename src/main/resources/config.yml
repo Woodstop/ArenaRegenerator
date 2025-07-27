@@ -1,0 +1,80 @@
+# ArenaRegenerator Plugin Configuration
+
+# Minigame Arena Configurations
+# Define settings for each arena that will function as a minigame.
+minigames:
+  # Example Arena Configuration
+  arena_1:
+    enabled: false # Whether this arena can be used as a minigame
+    min-players: 2 # Minimum players required to start the game
+    max-players: 8 # Maximum players allowed in the arena
+    game-duration-seconds: 180 # How long the game lasts (e.g., 3 minutes)
+    lobby-countdown-seconds: 10 # Countdown before game starts when min players met
+
+    # Player State Restoration
+    # If true, players' inventory, health, food, game mode, and exact location
+    # will be saved before joining and restored upon leaving/game end.
+    # If an exit spawn is defined, this will override the player's last location.
+    restore-player-state-on-exit: true
+
+    # Whether players' inventories are cleared when joining the game
+    clear-inventory-on-join: true
+
+    # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
+    give-item-on-join:
+      - DIAMOND_SHOVEL
+      - STONE_AXE:1 # Example: a stone axe with quantity 1
+      - LEATHER_HELMET
+      - LEATHER_CHESTPLATE
+      - LEATHER_LEGGINGS
+      - LEATHER_BOOTS
+      - COOKED_BEEF:16 # Example: 16 cooked beef
+
+    game-mode-on-join: SURVIVAL # SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR
+
+    # List of materials that players are allowed to break in this arena
+    breakable-blocks:
+      - SNOW_BLOCK
+      - ICE
+      - GLASS
+
+    # List of materials that players are allowed to place in this arena
+    placeable-blocks:
+      - COBBLESTONE
+      - DIRT
+      - SAND
+
+    prevent-damage: true # Prevent any damage to the players
+    item-drops: true # Allow item drops from blocks
+    prevent-item-durability-loss: true # Prevent items from losing durability
+
+  # You can add more arenas here following the same structure
+  # my_other_arena:
+  #   enabled: true
+  #   min-players: 4
+  #   max-players: 16
+  #   game-duration-seconds: 300
+  #   lobby-countdown-seconds: 20
+  #   restore-player-state-on-exit: true
+  #   clear-inventory-on-join: true
+  # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
+  #    give-item-on-join:
+  #      - DIAMOND_SHOVEL
+  #      - STONE_AXE:1 # Example: a stone axe with quantity 1
+  #      - LEATHER_HELMET
+  #      - LEATHER_CHESTPLATE
+  #      - LEATHER_LEGGINGS
+  #      - LEATHER_BOOTS
+  #      - COOKED_BEEF:16 # Example: 16 cooked beef
+  #   game-mode-on-join: SURVIVAL
+  #   breakable-blocks:
+  #      - SNOW_BLOCK
+  #      - ICE
+  #      - GLASS
+  #   placeable-blocks:
+  #      - COBBLESTONE
+  #      - DIRT
+  #      - SAND
+  #   prevent-damage: false
+  #   item-drops: true
+  #   prevent-item-durability-loss: true

@@ -6,7 +6,7 @@ softdepend: [FastAsyncWorldEdit, WorldEdit]
 commands:
     arena:
       description: "Main command for ArenaRegenerator plugin."
-      usage: "/arena <save|regen|clear|list|delete|info|select> [arenaName]"
+      usage: "/arena <save|regen|clear|list|delete|info|select|join|leave> [arenaName]"
       permission: arenaregenerator.command
       aliases: [ ar ]
 permissions:
@@ -21,6 +21,11 @@ permissions:
       arenaregenerator.delete: true
       arenaregenerator.info: true
       arenaregenerator.select: true
+      arenaregenerator.join: true
+      arenaregenerator.leave: true
+      arenaregenerator.reload: true
+      arenaregenerator.setspawn: true
+      arenaregenerator.delspawn: true
   arenaregenerator.save:
     description: "Saves the specified region as a schematic"
     default: op
@@ -42,9 +47,32 @@ permissions:
   arenaregenerator.select:
     description: "Selects the specified arena"
     default: op
-  arenaregenerator.sign.create:
+  arenaregenerator.join:
+    description: "Allows joining minigame arenas"
     default: op
-  arenaregenerator.sign.use:
+  arenaregenerator.leave:
+    description: "Allows leaving minigame arenas"
+    default: true
+  arenaregenerator.reload:
+    description: "Allows reloading the plugin configuration."
+    default: op
+  arenaregenerator.setspawn:
+    description: "Allows setting lobby, exit, spectator, and game spawns for minigames."
+    default: op
+  arenaregenerator.delspawn:
+    description: "Allows deleting spawn points for minigames."
+    default: op
+  arenaregenerator.sign.create.regen:
+    default: op
+  arenaregenerator.sign.create.join:
+    default: op
+  arenaregenerator.sign.create.leave:
+    default: op
+  arenaregenerator.sign.use.regen:
+    default: op
+  arenaregenerator.sign.use.join:
+    default: op
+  arenaregenerator.sign.use.leave:
     default: op
   arenaregenerator.sign.bypass:
     default: op

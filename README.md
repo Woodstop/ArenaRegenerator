@@ -1,6 +1,13 @@
+![Java](https://img.shields.io/badge/Java-21-blue)
+![License](https://img.shields.io/github/license/Woodstop/ArenaRegenerator)
+![Release](https://img.shields.io/github/v/release/Woodstop/ArenaRegenerator)
+![Issues](https://img.shields.io/github/issues/Woodstop/ArenaRegenerator)
+
 # **ArenaRegenerator Plugin**
 
-A Minecraft Paper plugin for managing and regenerating arena regions with WorldEdit or FastAsyncWorldEdit. Ideal for Spleef, minigames, or any frequently reset area.
+ArenaRegenerator is a plugin for Paper Minecraft servers that handles arena saving, resetting, and full minigame logic using WorldEdit or FAWE.
+
+This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes full minigame support (e.g., lobby, countdown, game state, win detection) and interactive signs for easy use.
 
 ## **Table of Contents**
 
@@ -9,7 +16,7 @@ A Minecraft Paper plugin for managing and regenerating arena regions with WorldE
 3. [Installation](#installation)
 4. [Usage](#usage)
     * [Commands](#commands)
-    * [Arena Regen Signs](#arena-regen-signs)
+    * [Interactive Signs](#interactive-signs)
 5. [Permissions](#permissions)
 6. [Data Storage](#data-storage)
 7. [Building from Source](#building-from-source)
@@ -17,7 +24,31 @@ A Minecraft Paper plugin for managing and regenerating arena regions with WorldE
 
 ## **Features**
 
-Key features include: saving WorldEdit selections as schematics with origin points, instantly regenerating arenas, clearing arena blocks to air (schematic retained), listing/deleting/viewing info for saved arenas, loading arena boundaries as WorldEdit selections, and creating interactive regen signs with cooldowns.
+* Arena Management:
+
+   - Save WorldEdit selections as arenas.
+
+   - Instantly clear or regenerate arenas.
+
+   - List, delete, and view detailed information for saved arenas.
+
+* Minigame System:
+  - **Lobby System**: Players can join an arena's lobby and wait for enough players.
+
+  - **Countdown**: A configurable countdown begins when the minimum player count is met.
+
+  - **Game Start**: Players are moved from the lobby to game spawn points, inventories are cleared (configurable), and game mode is set.
+
+  - **Game End**: Game ends after a set duration or when a win condition (e.g., last player standing) is met. Players are teleported out, their state is restored (configurable), and the arena is reset.
+
+  - **Spectator Mode**: Players leaving the arena boundaries during a game can be moved to spectator mode.
+
+  - **Configurable Rules**: Set minimum/maximum players, game duration, lobby countdown, items and game mode on join, what blocks can be broken or placed, and damage prevention per arena.
+
+* Interactive Signs:
+  - Regenerate arenas on click with `[RegenArena]` signs
+  - Join minigame arenas with `[JoinArena]` signs
+  - Leave minigame arenas with `[LeaveArena]` signs
 
 
 ### /arena save and /arena info
@@ -37,6 +68,10 @@ Key features include: saving WorldEdit selections as schematics with origin poin
   <img src="https://github.com/Woodstop/ArenaRegenerator/blob/main/RegenSign.gif?raw=true" />
 </p>
 
+### Join Arena Signs
+<p align="center">
+    <img src="https://raw.githubusercontent.com/Woodstop/ArenaRegenerator/fd916e0b314a1e942c7eddfa959ab092866aa8b3/JoinArenaSign.gif" />
+</p>
 ## **Dependencies**
 
 This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be installed on your server.
@@ -48,53 +83,61 @@ This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be
 ## **Installation**
 
 1. Download the latest `ArenaRegenerator-X.X.X.jar` from the [releases](https://github.com/Woodstop/ArenaRegenerator/releases) page (or compile it yourself).
-2. Download either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** compatible with your server version.
+2. Download either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** that is compatible with your server version.
 3. Place both `ArenaRegenerator-X.X.X.jar` and your chosen WorldEdit/FAWE JAR into your server's plugins/ folder.
 4. Restart server.
 
 ## **Usage**
 
-### **Commands**
+### **Interactive Signs**
+
+Create signs to automatically regenerate arenas, join minigames, or leave minigames.
+
+1. Place sign.
+2. Line 1: `[RegenArena]` or `[JoinArena]` or `[LeaveArena]`.
+3. Line 2: Your exact arena name.
+4. Players with appropriate permissions can click to use.
+5. Default 10-second cooldown; `arenaregenerator.sign.bypass` overrides.
+
+## **Commands and Permissions**
 
 Commands use the `/arena` prefix. An alias `/ar` is also available. Replace `<arenaName>` with your desired name for the arena.
 
-* `/arena save <arenaName>`: Saves current WorldEdit selection as a schematic with origin.
-* `/arena regen <arenaName>`: Pastes saved arena schematic at original location.
-* `/arena clear <arenaName>`: Clears arena blocks to air; schematic remains.
-* `/arena list`: Lists all saved arena names.
-* `/arena delete <arenaName>`: Deletes arena schematic and data.
-* `/arena info <arenaName>`: Displays arena metadata (origin, world, schematic status).
-* `/arena select <arenaName>`: Loads saved arena boundaries as WorldEdit selection.
+`<arenaType>` can be either `lobby`, `exit`, `spectator`, or `game`.
 
-### **Arena Regen Signs**
+| **Permission Node**                  | **Description**                                                      | **Command**                                           |
+|--------------------------------------|----------------------------------------------------------------------|-------------------------------------------------------|
+| `arenaregenerator.regen`             | Allows use of the regen function                                     | `/arena regen`                                        |
+| `arenaregenerator.save`              | Allows saving an arena                                               | `/arena save`                                         |
+| `arenaregenerator.list`              | Allows listing saved arenas                                          | `/arena list`                                         |
+| `arenaregenerator.delete`            | Allows deleting an arena                                             | `/arena delete`                                       |
+| `arenaregenerator.clear`             | Allows clearing an arena without deleting the schematic              | `/arena clear`                                        |
+| `arenaregenerator.info`              | Allows viewing info about the current arena                          | `/arena info`                                         |
+| `arenaregenerator.select`            | Allows selecting a region for an arena                               | `/arena select`                                       |
+| `arenaregenerator.setspawn`          | Allows setting lobby, exit, spectator, and game spawns for minigames | `/arena setspawn <arenaName> <arenaType> [spawnName]` |
+| `arenaregenerator.delspawn`          | Allows deleting spawn points for minigames                           | `/arena delspawn <arenaName> <arenaType> [spawnName]` |
+| `arenaregenerator.join`              | Allows joining minigame arenas                                       | `/arena join <arenaName>`                             |
+| `arenaregenerator.leave`             | Allows leaving minigame arenas                                       | `/arena leave`                                        |
+| `arenaregenerator.reload`            | Allows reloading the plugin configuration                            | `/arena reload`                                       |
+| `arenaregenerator.sign.create.regen` | Allows players to create `[RegenArena]` signs                        | *Create sign with tags*                               |
+| `arenaregenerator.sign.create.join`  | Allows players to create `[JoinArena]` signs                         | *Create sign with tags*                               |
+| `arenaregenerator.sign.create.use`   | Allows players to create `[LeaveArena]` signs                        | *Create sign with tags*                               |
+| `arenaregenerator.sign.use.regen`    | Allows players to use `[RegenArena]` signs                           | *Click `[RegenArena]` sign*                           |
+| `arenaregenerator.sign.use.join`     | Allows players to use `[JoinArena]` signs                            | *Click `[JoinArena]` sign*                            |
+| `arenaregenerator.sign.use.leave`    | Allows players to use `[LeaveArena]` signs                           | *Click `[LeaveArena]` sign*                           |
+| `arenaregenerator.sign.bypass`       | Allows players to bypass sign cooldowns                              | *Click signs repeatedly*                              |
+| `arenaregenerator.sign.break`        | Allows players to break interactive signs                            | *Break sign block*                                    |
 
-Create signs to automatically regenerate arenas.
-
-1. Place sign.
-2. Line 1: \[RegenArena\] (turns light blue with permission).
-3. Line 2: Exact arena name.
-4. Players with `arenaregenerator.sign.use` click to regenerate.
-5. Default 10-second cooldown; `arenaregenerator.sign.bypass` overrides.
-
-## **Permissions**
-
-All permissions are default: false (requires explicit granting) unless otherwise specified.
-
-* `arenaregenerator.regen`: Allows use of /arena regen.
-* `arenaregenerator.save`: Allows use of /arena save.
-* `arenaregenerator.list`: Allows use of /arena list.
-* `arenaregenerator.delete`: Allows use of /arena delete.
-* `arenaregenerator.clear`: Allows use of /arena clear.
-* `arenaregenerator.info`: Allows use of /arena info.
-* `arenaregenerator.select`: Allows use of /arena select.
-* `arenaregenerator.sign.create`: Allows players to create \[RegenArena\] signs.
-* `arenaregenerator.sign.use`: Allows players to use \[RegenArena\] signs.
-* `arenaregenerator.sign.bypass`: Allows players to bypass the cooldown on \[RegenArena\] signs.
-* `arenaregenerator.sign.break`: Allows players to break \[RegenArena\] signs.
 
 ## **Data Storage**
 
-The plugin stores arena metadata (origin, world) in plugins/ArenaRegenerator/arenas.json. Schematic files (.schem) are stored in the same directory.
+The plugin stores: 
+
+* Arena Metadata and Spawn Points: Located in `plugins/ArenaRegenerator/arenas.json`. This file contains the origin, world, and all configured lobby, exit, spectator, and named game spawn points for each arena.
+
+* Schematic Files: Located in `plugins/ArenaRegenerator/schematics/`. These are the WorldEdit schematic files (.schem) for each saved arena.
+
+* Minigame Configurations: Located in `plugins/ArenaRegenerator/config.yml`. This file defines the rules and settings for which saved arenas function as minigames (e.g., min/max players, game duration, specific game rules).
 
 ## **Building from Source**
 
@@ -102,8 +145,8 @@ To build from source:
 
 1. Clone repository.
 2. Ensure Java 21 and JAVA\_HOME are set.
-3. Build with Maven (mvn clean package).  
-   JAR is in target/.
+3. Build with Maven (`mvn clean package`).  
+   The compiled JAR will be in the `target/` directory.
 
 ## **Support & Contribution**
 
