@@ -81,7 +81,7 @@ public class ArenaInfoCommand implements CommandExecutor {
 
     // Helper method to format Location for display
     private String formatLocation(Location loc) {
-        return String.format("World: %s, X: %.1f, Y: %.1f, Z: %.1f, Yaw: %.1f, Pitch: %.1f",
-                loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        return String.format("X: %.1f, Y: %.1f, Z: %.1f, Yaw: %.1f, Pitch: %.1f",
+                loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 }
