@@ -31,13 +31,13 @@ public class SetSpawnCommand implements CommandExecutor {
         }
 
         if (args.length < 2 || args.length > 3) {
-            player.sendMessage(ChatColor.RED + "Usage: /arena setspawn <arenaName> <lobby|exit|spectator|game> [spawnName]");
+            player.sendMessage(ChatColor.RED + "Usage: /arena setspawn <lobby|exit|spectator|game> <arenaName> [spawnName]");
             player.sendMessage(ChatColor.RED + "Note: [spawnName] is only for 'game' type.");
             return true;
         }
 
-        String arenaName = args[0];
-        String spawnType = args[1].toLowerCase(); // lobby, exit, spectator, or game
+        String arenaName = args[1];
+        String spawnType = args[0].toLowerCase(); // lobby, exit, spectator, or game
         String gameSpawnName = (args.length == 3) ? args[2] : null;
 
         try {
@@ -62,7 +62,7 @@ public class SetSpawnCommand implements CommandExecutor {
                     break;
                 case "game":
                     if (gameSpawnName == null || gameSpawnName.isEmpty()) {
-                        player.sendMessage(ChatColor.RED + "Usage: /setspawn <arenaName> game <spawnName>");
+                        player.sendMessage(ChatColor.RED + "Usage: /setspawn game <arenaName> <spawnName>");
                         return true;
                     }
                     fullSpawnPath = "game-spawn-points." + gameSpawnName; // e.g., "game-spawn-points.spawn1"

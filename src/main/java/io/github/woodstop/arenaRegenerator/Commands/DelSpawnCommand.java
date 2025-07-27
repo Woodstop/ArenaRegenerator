@@ -23,13 +23,13 @@ public class DelSpawnCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length < 2 || args.length > 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /arena delspawn <arenaName> <lobby|exit|spectator|game> [spawnName]");
+            sender.sendMessage(ChatColor.RED + "Usage: /arena delspawn <lobby|exit|spectator|game> <arenaName> [spawnName]");
             sender.sendMessage(ChatColor.RED + "Note: [spawnName] is only for 'game' type.");
             return true;
         }
 
-        String arenaName = args[0];
-        String spawnType = args[1].toLowerCase();
+        String arenaName = args[1];
+        String spawnType = args[0].toLowerCase();
         String gameSpawnName = (args.length == 3) ? args[2] : null;
 
         try {
@@ -51,7 +51,7 @@ public class DelSpawnCommand implements CommandExecutor {
                     break;
                 case "game":
                     if (gameSpawnName == null || gameSpawnName.isEmpty()) {
-                        sender.sendMessage(ChatColor.RED + "Usage: /delspawn <arenaName> game <spawnName>");
+                        sender.sendMessage(ChatColor.RED + "Usage: /delspawn game <arenaName> <spawnName>");
                         return true;
                     }
                     fullSpawnPath = "game-spawn-points." + gameSpawnName;
