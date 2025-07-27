@@ -73,6 +73,11 @@ This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes f
     <img src="https://raw.githubusercontent.com/Woodstop/ArenaRegenerator/fd916e0b314a1e942c7eddfa959ab092866aa8b3/JoinArenaSign.gif" />
 </p>
 
+### Minigame Logic
+<p align="center">
+    <img src="https://raw.githubusercontent.com/Woodstop/ArenaRegenerator/1e91d9673727e0268a68fbd1a2bac4fe01e7679b/SpleefGame.gif" />
+</p>
+
 ## **Dependencies**
 
 This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be installed on your server.
