@@ -96,10 +96,10 @@ public class MinigameArena {
         this.gameSpawnPoints = arenaDataManager.loadGameSpawnPoints(arenaName);
 
         // Log loaded spawn points for debugging
-        if (this.lobbySpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Lobby spawn not set in arenas.json.");
-        if (this.exitSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Exit spawn not set in arenas.json.");
-        if (this.spectatorSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Spectator spawn not set in arenas.json.");
-        if (this.gameSpawnPoints.isEmpty()) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': No game spawn points set in arenas.json.");
+        // if (this.lobbySpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Lobby spawn not set in arenas.json.");
+        // if (this.exitSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Exit spawn not set in arenas.json.");
+        // if (this.spectatorSpawn == null) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': Spectator spawn not set in arenas.json.");
+        // if (this.gameSpawnPoints.isEmpty()) plugin.getLogger().warning("[MinigameArena] Arena '" + arenaName + "': No game spawn points set in arenas.json.");
 
         this.clearInventoryOnJoin = config.getBoolean("clear-inventory-on-join", true);
         this.itemsOnJoin = loadItemsOnJoin();

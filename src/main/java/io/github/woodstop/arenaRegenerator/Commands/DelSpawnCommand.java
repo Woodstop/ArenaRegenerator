@@ -6,7 +6,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -23,7 +22,7 @@ public class DelSpawnCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (args.length != 2) {
+        if (args.length < 2 || args.length > 3) {
             sender.sendMessage(ChatColor.RED + "Usage: /arena delspawn <arenaName> <lobby|exit|spectator|game> [spawnName]");
             sender.sendMessage(ChatColor.RED + "Note: [spawnName] is only for 'game' type.");
             return true;

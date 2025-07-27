@@ -182,7 +182,6 @@ public final class ArenaRegenerator extends JavaPlugin {
         // Recreate manager
         try {
             this.minigameManager = new MinigameManager(this, arenaDataManager);
-            getLogger().info("[ArenaRegenerator] New MinigameManager initialized.");
         } catch (Exception e) {
             getLogger().severe("[ArenaRegenerator] Failed to initialize MinigameManager: " + e.getMessage());
             this.minigameManager = null;

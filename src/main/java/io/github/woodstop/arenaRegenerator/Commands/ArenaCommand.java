@@ -123,11 +123,11 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
                 case "delete":
                 case "info":
                 case "select":
+                case "delspawn":
+                case "setspawn":
                     // Suggest existing saved arena names from ArenaDataManager
                     return getSavedArenaNameCompletions(partialArg);
                 case "join":
-                case "delspawn":
-                case "setspawn":
                     // Suggest configured minigame arena names from MinigameManager
                     return getMinigameArenaNameCompletions(partialArg);
             }
@@ -212,18 +212,27 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
 
     /**
      * Helper to get completions for game spawn point names within a specific arena.
-     * @param arenaName The name of the arena.
+     * @param arenaNameInput The name of the arena.
      * @param partialName The partial name typed by the user.
      * @return A list of matching game spawn point names.
      */
-    private List<String> getGameSpawnPointNameCompletions(String arenaName, String partialName) {
-        MinigameArena arena = minigameManager.getMinigameArena(arenaName);
-        if (arena != null) {
-            return arena.getGameSpawnPointNames().stream()
-                    .filter(s -> s.toLowerCase().startsWith(partialName))
-                    .collect(Collectors.toList());
+    private List<String> getGameSpawnPointNameCompletions(String arenaNameInput, String partialName) {
+        try {
+            // Get all arena names from arenas.json (case-insensitively)
+            String actualArenaName = arenaDataManager.loadArenasJson().keySet().stream()
+                    .filter(s -> s.equalsIgnoreCase(arenaNameInput))
+                    .findFirst()
+                    .orElse(null);
+
+            if (actualArenaName != null) {
+                // Load game spawn points for the actual arena name from arenas.json
+                return arenaDataManager.loadGameSpawnPoints(actualArenaName).keySet().stream()
+                        .filter(s -> s.toLowerCase().startsWith(partialName))
+                        .collect(Collectors.toList());
+            }
+        } catch (IOException e) {
+            ArenaRegenerator.getInstance().getLogger().warning("Error loading game spawn names for tab completion: " + e.getMessage());
         }
         return Collections.emptyList();
     }
-
 }
