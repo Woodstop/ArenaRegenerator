@@ -144,12 +144,10 @@ public class MinigameScoreboardManager {
      */
     public void removeScoreboard(Player player) {
         if (playerScoreboards.containsKey(player.getUniqueId())) {
-            plugin.getLogger().info("[MinigameScoreboardManager] Attempting to remove scoreboard for " + player.getName() + " from arena " + arenaName);
             try {
                 // Set player's scoreboard back to an empty server scoreboard
                 player.setScoreboard(scoreboardManager.getNewScoreboard());
                 playerScoreboards.remove(player.getUniqueId());
-                plugin.getLogger().info("[MinigameScoreboardManager] Scoreboard successfully removed and reset for " + player.getName() + ".");
             } catch (Exception e) {
                 plugin.getLogger().severe("[MinigameScoreboardManager] Error removing scoreboard for " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();

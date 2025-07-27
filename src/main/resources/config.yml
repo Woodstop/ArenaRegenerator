@@ -14,7 +14,7 @@ minigames:
     # Player State Restoration
     # If true, players' inventory, health, food, game mode, and exact location
     # will be saved before joining and restored upon leaving/game end.
-    # If false, players will be teleported to the 'exit-spawn' location.
+    # If an exit spawn is defined, this will override the player's last location.
     restore-player-state-on-exit: true
 
     # Whether players' inventories are cleared when joining the game
@@ -55,7 +55,7 @@ minigames:
   #   max-players: 16
   #   game-duration-seconds: 300
   #   lobby-countdown-seconds: 20
-  #   restore-player-state-on-exit: false
+  #   restore-player-state-on-exit: true
   #   clear-inventory-on-join: true
   # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
   #    give-item-on-join:
@@ -67,6 +67,14 @@ minigames:
   #      - LEATHER_BOOTS
   #      - COOKED_BEEF:16 # Example: 16 cooked beef
   #   game-mode-on-join: SURVIVAL
-  #   prevent-block-break: true
-  #   prevent-block-place: true
+  #   breakable-blocks:
+  #      - SNOW_BLOCK
+  #      - ICE
+  #      - GLASS
+  #   placeable-blocks:
+  #      - COBBLESTONE
+  #      - DIRT
+  #      - SAND
   #   prevent-damage: false
+  #   item-drops: true
+  #   prevent-item-durability-loss: true

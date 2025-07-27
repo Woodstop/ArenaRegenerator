@@ -65,7 +65,6 @@ public class DelSpawnCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GREEN + "Spawn point '" + spawnType + (gameSpawnName != null ? " " + gameSpawnName : "") + "' deleted for arena '" + arenaName + "'.");
                 // Reload the plugin to ensure MinigameManager reflects the change
                 plugin.reloadPlugin();
-                sender.sendMessage(ChatColor.YELLOW + "Minigame configurations reloaded to apply spawn point changes.");
             } else {
                 sender.sendMessage(ChatColor.YELLOW + "Spawn point '" + spawnType + (gameSpawnName != null ? " " + gameSpawnName : "") + "' not found for arena '" + arenaName + "'.");
             }
