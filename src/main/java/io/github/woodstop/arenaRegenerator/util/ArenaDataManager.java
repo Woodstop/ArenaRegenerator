@@ -32,17 +32,24 @@ public class ArenaDataManager {
     private final ArenaRegenerator plugin;
     private final File dataFolder;
     private final File arenasJsonFile;
+    private final File schematicsFolder;
     private final Gson gson;
 
     public ArenaDataManager() {
         this.plugin = ArenaRegenerator.getInstance();
         this.dataFolder = plugin.getDataFolder();
         this.arenasJsonFile = new File(dataFolder, "arenas.json");
+        this.schematicsFolder = new File(dataFolder, "schematics");
         this.gson = new GsonBuilder().setPrettyPrinting().create();
 
         // Ensure data folder exists
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
+        }
+        // Ensure schematics folder exists
+        if (!schematicsFolder.exists()) {
+            schematicsFolder.mkdirs();
+            plugin.getLogger().info("Created Schematics folder at: " + schematicsFolder.getAbsolutePath());
         }
         // Create arenas.json if it doesn't exist
         if (!arenasJsonFile.exists()) {
@@ -60,7 +67,7 @@ public class ArenaDataManager {
      * @return The File object.
      */
     public File getSchematicFile(String arenaName) {
-        return new File(dataFolder, arenaName + ".schem");
+        return new File(schematicsFolder, arenaName + ".schem");
     }
 
     /**
