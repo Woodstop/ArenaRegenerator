@@ -47,14 +47,6 @@ public class SetSpawnCommand implements CommandExecutor {
                 return true;
             }
 
-            // Then, check if the arena is configured as a minigame in config.yml
-            // This is crucial as spawn points are tied to minigame functionality.
-            ConfigurationSection arenaConfig = plugin.getMinigameConfig(arenaName);
-            if (arenaConfig == null || !arenaConfig.getBoolean("enabled", false)) {
-                player.sendMessage(ChatColor.RED + "Minigame arena '" + arenaName + "' not found or not enabled in config.yml.");
-                return true;
-            }
-
             Location playerLoc = player.getLocation();
             String fullSpawnPath; // This will be the key used in arenas.json
 
