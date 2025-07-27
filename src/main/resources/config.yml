@@ -5,7 +5,7 @@
 minigames:
   # Example Arena Configuration
   arena_1:
-    enabled: true # Whether this arena can be used as a minigame
+    enabled: false # Whether this arena can be used as a minigame
     min-players: 2 # Minimum players required to start the game
     max-players: 8 # Maximum players allowed in the arena
     game-duration-seconds: 180 # How long the game lasts (e.g., 3 minutes)
