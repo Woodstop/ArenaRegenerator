@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>ArenaRegenerator</name>
-    <description>A Minecraft plugin to regenerate arenas.</description>
+    <description>ArenaRegenerator is a plugin for Paper Minecraft servers that handles arena saving, resetting, and full minigame logic using WorldEdit or FAWE.</description>
     <url>https://github.com/Woodstop/ArenaRegenerator</url>
 
     <properties>
