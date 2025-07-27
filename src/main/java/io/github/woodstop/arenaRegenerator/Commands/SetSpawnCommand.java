@@ -78,7 +78,6 @@ public class SetSpawnCommand implements CommandExecutor {
 
             // Reload the plugin to ensure MinigameManager picks up the new spawn points
             plugin.reloadPlugin();
-            player.sendMessage(ChatColor.YELLOW + "Minigame configurations reloaded to apply new spawn point.");
 
         } catch (IOException e) {
             player.sendMessage(ChatColor.RED + "Error saving spawn point: " + e.getMessage());

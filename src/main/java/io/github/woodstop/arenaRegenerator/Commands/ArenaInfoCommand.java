@@ -50,7 +50,7 @@ public class ArenaInfoCommand implements CommandExecutor {
             sender.sendMessage("§7Origin: §f(" + x + ", " + y + ", " + z + ")");
             sender.sendMessage("§7Schematic File: §f" + schematicFile.getName() + (fileExists ? " §a✓" : " §c✗ Not found"));
 
-            sender.sendMessage(ChatColor.GOLD + "--- Spawn Points ---");
+            sender.sendMessage(ChatColor.GOLD + "------- Spawn Points -------");
             Location lobbySpawn = dataManager.loadSpawnLocation(arenaName, "lobby-spawn");
             if (lobbySpawn != null) sender.sendMessage(ChatColor.YELLOW + "Lobby: " + ChatColor.WHITE + formatLocation(lobbySpawn));
             else sender.sendMessage(ChatColor.YELLOW + "Lobby: " + ChatColor.GRAY + "Not set");
