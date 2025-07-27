@@ -51,6 +51,7 @@ public class MinigameArena {
     private final List<ItemStack> itemsOnJoin;
     private final GameMode gameModeOnJoin;
     private final boolean allowItemDrops;
+    private final boolean preventItemDurabilityLoss;
 
     private final Set<Material> breakableBlocks;
     private final Set<Material> placeableBlocks;
@@ -130,6 +131,7 @@ public class MinigameArena {
 
         this.preventDamage = config.getBoolean("prevent-damage", true);
         this.allowItemDrops = config.getBoolean("item-drops", true);
+        this.preventItemDurabilityLoss = config.getBoolean("prevent-item-durability-loss", true);
 
         this.playersInLobby = new ArrayList<>();
         this.playersInGame = new ArrayList<>();
@@ -657,5 +659,13 @@ public class MinigameArena {
 
     public boolean getAllowItemDrops() {
         return allowItemDrops;
+    }
+
+    /**
+     * Returns whether item durability loss is prevented in this arena.
+     * @return true if item durability loss is prevented, false otherwise.
+     */
+    public boolean shouldPreventItemDurabilityLoss() {
+        return preventItemDurabilityLoss;
     }
 }

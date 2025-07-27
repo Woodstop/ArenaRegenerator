@@ -46,6 +46,7 @@ minigames:
 
     prevent-damage: true # Prevent any damage to the players
     item-drops: true # Allow item drops from blocks
+    prevent-item-durability-loss: true # Prevent items from losing durability
 
   # You can add more arenas here following the same structure
   # my_other_arena:
