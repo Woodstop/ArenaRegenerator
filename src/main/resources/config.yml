@@ -4,11 +4,11 @@
 # Define settings for each arena that will function as a minigame.
 minigames:
   # Example Arena Configuration
-  spleef_arena_1:
+  arena_1:
     enabled: true # Whether this arena can be used as a minigame
     min-players: 2 # Minimum players required to start the game
     max-players: 8 # Maximum players allowed in the arena
-    game-duration-seconds: 180 # How long the game lasts (e.g., 3 minutes for Spleef)
+    game-duration-seconds: 180 # How long the game lasts (e.g., 3 minutes)
     lobby-countdown-seconds: 10 # Countdown before game starts when min players met
 
     # Player State Restoration
@@ -17,50 +17,7 @@ minigames:
     # If false, players will be teleported to the 'exit-spawn' location.
     restore-player-state-on-exit: true
 
-    # Teleportation Points (coordinates are relative to the world for clarity)
-    # These should be set to actual locations in your world.
-    lobby-spawn:
-      world: world # World where the lobby spawn is located
-      x: 0.5
-      y: 64.0
-      z: 0.5
-      yaw: 0.0 # Player facing direction
-      pitch: 0.0
-
-    game-spawn-points: # Multiple named spawn points for players within the arena
-      spawn1: # Name of the spawn point
-        world: world
-        x: 10.5
-        y: 60.0
-        z: 10.5
-        yaw: 90.0
-        pitch: 0.0
-      spawn2: # Another named spawn point
-        world: world
-        x: -10.5
-        y: 60.0
-        z: -10.5
-        yaw: -90.0
-        pitch: 0.0
-
-    # Where players are teleported after the game ends or they leave
-    exit-spawn:
-      world: world
-      x: 0.5
-      y: 64.0
-      z: 0.5
-      yaw: 0.0
-      pitch: 0.0
-
-    spectator-spawn:
-      world: world
-      x: 0.5
-      y: 70.0
-      z: 0.5
-      yaw: 0.0
-      pitch: 0.0
-
-    # Game-specific settings (e.g., for Spleef)
+    # Whether players' inventories are cleared when joining the game
     clear-inventory-on-join: true
 
     # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
@@ -74,48 +31,30 @@ minigames:
       - COOKED_BEEF:16 # Example: 16 cooked beef
 
     game-mode-on-join: SURVIVAL # SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR
+
     # List of materials that players are allowed to break in this arena
     breakable-blocks:
       - SNOW_BLOCK
       - ICE
       - GLASS
+
     # List of materials that players are allowed to place in this arena
     placeable-blocks:
       - COBBLESTONE
       - DIRT
       - SAND
-    prevent-damage: true # Prevent player vs player damage
+
+    prevent-damage: true # Prevent any damage to the players
     item-drops: true # Allow item drops from blocks
 
   # You can add more arenas here following the same structure
-  # my_other_spleef_arena:
+  # my_other_arena:
   #   enabled: true
   #   min-players: 4
   #   max-players: 16
   #   game-duration-seconds: 300
   #   lobby-countdown-seconds: 20
   #   restore-player-state-on-exit: false
-  #   lobby-spawn:
-  #     world: world
-  #     x: 50.5
-  #     y: 70.0
-  #     z: 50.5
-  #   game-spawn-points:
-  #     start_a:
-  #       world: world
-  #       x: 60.5
-  #       y: 65.0
-  #       z: 60.5
-  #   exit-spawn:
-  #     world: world
-  #     x: 50.5
-  #     y: 70.0
-  #     z: 50.5
-  #   spectator-spawn:
-  #     world: world
-  #     x: 50.5
-  #     y: 75.0
-  #     z: 50.5
   #   clear-inventory-on-join: true
   # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
   #    give-item-on-join:
