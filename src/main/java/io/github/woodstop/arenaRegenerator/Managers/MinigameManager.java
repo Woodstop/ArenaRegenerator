@@ -178,6 +178,21 @@ public class MinigameManager {
     }
 
     /**
+     * Gets the MinigameArena a player is currently in.
+     * This method correctly retrieves the arena using playerCurrentArenaMap and activeMinigames.
+     * @param player The player.
+     * @return The MinigameArena, or null if the player is not in one.
+     */
+    public MinigameArena getPlayerCurrentMinigame(Player player) {
+        String arenaName = playerCurrentArenaMap.get(player.getUniqueId());
+        if (arenaName != null) {
+            return activeMinigames.get(arenaName); // Use the case-sensitive name to retrieve the arena object
+        }
+        return null;
+    }
+
+
+    /**
      * Shuts down the MinigameManager, canceling all active game tasks
      * and preparing for re-initialization or plugin disable.
      */

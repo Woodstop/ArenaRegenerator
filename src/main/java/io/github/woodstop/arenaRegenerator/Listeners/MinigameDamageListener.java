@@ -24,15 +24,15 @@ public class MinigameDamageListener implements Listener {
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         // Initial logging for all damage-by-entity events
-     //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] EntityDamageByEntityEvent triggered. Damager: " + event.getDamager().getName() + ", Damaged: " + event.getEntity().getName());
+        //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] EntityDamageByEntityEvent triggered. Damager: " + event.getDamager().getName() + ", Damaged: " + event.getEntity().getName());
 
         // Ensure both damager and damaged are players
         if (!(event.getDamager() instanceof Player damager)) {
-         //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damager is not a player. Skipping.");
+            //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damager is not a player. Skipping.");
             return;
         }
         if (!(event.getEntity() instanceof Player damaged)) {
-         //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damaged entity is not a player. Skipping.");
+            //   minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damaged entity is not a player. Skipping.");
             return;
         }
 
@@ -47,36 +47,23 @@ public class MinigameDamageListener implements Listener {
             String damagerArenaName = minigameManager.getPlayerArenaName(damager);
             String damagedArenaName = minigameManager.getPlayerArenaName(damaged);
 
-           // minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damager Arena: " + damagerArenaName + ", Damaged Arena: " + damagedArenaName);
+            // minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damager Arena: " + damagerArenaName + ", Damaged Arena: " + damagedArenaName);
 
             // Only apply rules if they are in the same minigame
             if (damagerArenaName != null && damagerArenaName.equals(damagedArenaName)) {
                 MinigameArena arena = minigameManager.getMinigameArena(damagerArenaName);
-                if (arena != null) {
-                   // minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damage attempt in arena " + arena.getArenaName() + ": Damager=" + damager.getName() + ", Damaged=" + damaged.getName() + ", PreventDamage=" + arena.getPreventDamage());
 
-                    // If damage is prevented for this arena, cancel the event and notify both players
-                    if (arena.getPreventDamage()) {
-                        event.setCancelled(true);
-                       // minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] PvP cancelled in " + arena.getArenaName() + ". Both players notified.");
-                    } //else {
-                       // minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] PvP allowed in " + arena.getArenaName() + ". Event not cancelled.");
-                  //  }
-                } else {
-                    minigameManager.getPlugin().getLogger().warning("[MinigameDamageListener] Could not get MinigameArena for " + damagerArenaName + " during damage event.");
+                // If in WAITING or COUNTDOWN state, always prevent damage
+                if (arena.getCurrentState() == MinigameArena.GameState.WAITING ||
+                        arena.getCurrentState() == MinigameArena.GameState.COUNTDOWN) {
+                    event.setCancelled(true);
                 }
-            } else {
-                // Players are in minigames but different ones, or one is in a minigame and the other isn't.
-                // For now, allow damage between different arenas/non-arena players.
-                // You might want more complex rules here depending on your game design.
-                minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damage between players in different minigames or one not in minigame. Damager in game: " + damagerInMinigame + ", Damaged in game: " + damagedInMinigame);
+                // If in IN_GAME state, respect the preventDamage config
+                else if (arena.getCurrentState() == MinigameArena.GameState.IN_GAME && arena.getPreventDamage()) {
+                    event.setCancelled(true);
+                }
             }
-        } else if (damagerInMinigame || damagedInMinigame) {
-            // One player is in a minigame, the other is not.
-            // By default, allow damage, but you could implement rules here.
-            minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Damage between minigame player and non-minigame player. Damager in game: " + damagerInMinigame + ", Damaged in game: " + damagedInMinigame);
         }
-        // If neither is in a minigame, let the event pass (handled by other plugins or default Bukkit)
     }
 
     // Also listen for general EntityDamageEvent to prevent fall damage, environmental damage, etc.
@@ -94,14 +81,14 @@ public class MinigameDamageListener implements Listener {
         String arenaName = minigameManager.getPlayerArenaName(player);
         MinigameArena arena = minigameManager.getMinigameArena(arenaName);
 
-        if (arena != null && arena.getCurrentState() == MinigameArena.GameState.IN_GAME) {
-            // If preventDamage is true, cancel all damage to players in this arena
-            // This covers fall damage, environmental damage, etc.
-            if (arena.getPreventDamage()) {
-                event.setCancelled(true);
-                // No message needed for self-inflicted/environmental damage usually
-                minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] General damage cancelled for " + player.getName() + " in arena " + arenaName + " (PreventDamage=true).");
-            }
+        // If in WAITING or COUNTDOWN state, always prevent damage
+        if (arena.getCurrentState() == MinigameArena.GameState.WAITING ||
+                arena.getCurrentState() == MinigameArena.GameState.COUNTDOWN) {
+            event.setCancelled(true);
+        }
+        // If in IN_GAME state, respect the preventDamage config
+        else if (arena.getCurrentState() == MinigameArena.GameState.IN_GAME && arena.getPreventDamage()) {
+            event.setCancelled(true);
         }
     }
 }

@@ -1,9 +1,13 @@
 package io.github.woodstop.arenaRegenerator.Listeners;
 
 import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
+import io.github.woodstop.arenaRegenerator.Minigame.MinigameArena;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent; // Import PlayerQuitEvent
 
 /**
@@ -33,6 +37,31 @@ public class MinigamePlayerListener implements Listener {
             // Force the player to leave the minigame and restore their state
             minigameManager.leaveMinigame(player, true);
             // No need to send message to player, as they have already quit
+        }
+    }
+
+    // Check if the player has fallen into the void when in the lobby
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        MinigameArena arena = minigameManager.getPlayerCurrentMinigame(player);
+
+        if (arena == null) {
+            return; // Player is not in a minigame
+        }
+
+        // Check if player is in a lobby state (WAITING or COUNTDOWN)
+        if (arena.getCurrentState() == MinigameArena.GameState.WAITING ||
+                arena.getCurrentState() == MinigameArena.GameState.COUNTDOWN) {
+
+            Location lobbySpawn = arena.getLobbySpawn();
+            // Calculate the dynamic void threshold: 15 blocks below lobby spawn Y
+            double voidThresholdY = lobbySpawn.getY() - 15;
+
+            // Check if player has fallen into the void
+            if (player.getLocation().getY() < voidThresholdY) {
+                player.teleport(lobbySpawn);
+            }
         }
     }
 }
