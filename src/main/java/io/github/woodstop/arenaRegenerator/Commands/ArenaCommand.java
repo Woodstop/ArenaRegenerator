@@ -123,10 +123,12 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
                 case "delete":
                 case "info":
                 case "select":
-                case "delspawn":
-                case "setspawn":
                     // Suggest existing saved arena names from ArenaDataManager
                     return getSavedArenaNameCompletions(partialArg);
+                case "delspawn":
+                case "setspawn":
+                    // suggest spawn types (lobby, exit, spectator, game)
+                    return getSpawnTypeCompletions(partialArg);
                 case "join":
                     // Suggest configured minigame arena names from MinigameManager
                     return getMinigameArenaNameCompletions(partialArg);
@@ -138,13 +140,12 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
             switch (subCommand) {
                 case "setspawn":
                 case "delspawn":
-                    // For setspawn, suggest spawn types (lobby, exit, spectator, game)
-                    return getSpawnTypeCompletions(partialArg);
+                    return getSavedArenaNameCompletions(partialArg);
             }
-        } else if (args.length == 4) { // For /arena setspawn <arenaName> game <spawnName>
+        } else if (args.length == 4) { // For /arena setspawn game <arenaName> <spawnName>
             String subCommand = args[0].toLowerCase();
-            String spawnType = args[2].toLowerCase();
-            String arenaName = args[1].toLowerCase();
+            String spawnType = args[1].toLowerCase();
+            String arenaName = args[2].toLowerCase();
 
             if (subCommand.equals("setspawn") && spawnType.equals("game")) {
                 return Collections.singletonList("[spawnName]");
@@ -167,8 +168,8 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission("arenaregenerator.join")) sender.sendMessage(ChatColor.YELLOW + "/arena join <arenaName> " + ChatColor.GRAY + "- Joins a minigame arena.");
         if (sender.hasPermission("arenaregenerator.leave")) sender.sendMessage(ChatColor.YELLOW + "/arena leave " + ChatColor.GRAY + "- Leaves the current minigame arena.");
         if (sender.hasPermission("arenaregenerator.reload")) sender.sendMessage(ChatColor.YELLOW + "/arena reload " + ChatColor.GRAY + "- Reloads the plugin configuration.");
-        if (sender.hasPermission("arenaregenerator.setspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena setspawn <arenaName> <lobby|exit|spectator|game> " + ChatColor.GRAY + "- Sets a specific spawn point.");
-        if (sender.hasPermission("arenaregenerator.delspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena delspawn <arenaName> <lobby|exit|spectator|game> [spawnName] " + ChatColor.GRAY + "- Deletes a named game spawn point.");
+        if (sender.hasPermission("arenaregenerator.setspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena setspawn <lobby|exit|spectator|game> <arenaName> " + ChatColor.GRAY + "- Sets a specific spawn point.");
+        if (sender.hasPermission("arenaregenerator.delspawn")) sender.sendMessage(ChatColor.YELLOW + "/arena delspawn <lobby|exit|spectator|game> <arenaName> [spawnName] " + ChatColor.GRAY + "- Deletes a named game spawn point.");
         sender.sendMessage(ChatColor.GOLD + "---------------------------------");
     }
 
