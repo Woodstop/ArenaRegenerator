@@ -170,7 +170,7 @@ public class MinigameArena {
         player.sendMessage(ChatColor.GREEN + "Welcome to the lobby for " + arenaName + "!");
         broadcast(ChatColor.YELLOW + player.getName() + " joined the lobby (" + playersInLobby.size() + "/" + maxPlayers + ").");
         scoreboardManager.createScoreboard(player);
-        scoreboardManager.startScoreboardUpdateTask(this);
+        updateScoreboardsForAllPlayers();
 
         checkStartCondition();
         return true;
@@ -187,9 +187,11 @@ public class MinigameArena {
         scoreboardManager.removeScoreboard(player);
         broadcast(ChatColor.YELLOW + player.getName() + " left the arena.");
 
+
         // Manager will handle restoring state or teleporting to exit spawn
         // This method only handles removal from internal lists.
         checkEndCondition();
+        updateScoreboardsForAllPlayers();
     }
 
     /**
@@ -241,8 +243,10 @@ public class MinigameArena {
         currentState = GameState.COUNTDOWN;
         currentCountdown = lobbyCountdownSeconds;
         broadcast(ChatColor.GREEN + "Game starting in " + currentCountdown + " seconds!");
+        updateScoreboardsForAllPlayers();
 
         countdownTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            currentCountdown--;
             if (currentCountdown <= 0) {
                 startGame();
                 countdownTask.cancel();
@@ -257,7 +261,7 @@ public class MinigameArena {
             if (currentCountdown <= 5 || currentCountdown % 5 == 0) {
                 broadcast(ChatColor.YELLOW + "Game starts in " + currentCountdown + " seconds...");
             }
-            currentCountdown--;
+            updateScoreboardsForAllPlayers();
         }, 3L, 20L); // Every 1 second (20 ticks)
     }
 
@@ -271,6 +275,7 @@ public class MinigameArena {
         }
         currentState = GameState.WAITING;
         broadcast(ChatColor.YELLOW + "Countdown cancelled. Waiting for players...");
+        updateScoreboardsForAllPlayers();
     }
 
     /**
@@ -306,6 +311,8 @@ public class MinigameArena {
         broadcast(ChatColor.GREEN + "The game is now in progress!");
         this.gameStartTick = plugin.getServer().getCurrentTick(); // Record the exact tick the game started
         startArenaTimer();
+        // Start the continuous scoreboard update task now that the game is IN_GAME
+        scoreboardManager.startScoreboardUpdateTask(this);
     }
 
     /**
@@ -546,6 +553,22 @@ public class MinigameArena {
         return allPlayers;
     }
 
+    /**
+     * Helper method to update scoreboards for all players in the arena.
+     * This centralizes the call to MinigameScoreboardManager.updateScoreboard.
+     */
+    private void updateScoreboardsForAllPlayers() {
+        scoreboardManager.updateScoreboard(
+                currentState,
+                currentCountdown,
+                currentGameTime,
+                playersInGame.size(),
+                playersInLobby.size(),
+                minPlayers,
+                maxPlayers,
+                getAllPlayersInArena()
+        );
+    }
 
     /**
      * Retrieves a random game spawn point from the configured list.
