@@ -68,6 +68,10 @@ This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes f
   <img src="https://github.com/Woodstop/ArenaRegenerator/blob/main/RegenSign.gif?raw=true" />
 </p>
 
+### Join Arena Signs
+<p align="center">
+    <img src="https://raw.githubusercontent.com/Woodstop/ArenaRegenerator/fd916e0b314a1e942c7eddfa959ab092866aa8b3/JoinArenaSign.gif" />
+</p>
 ## **Dependencies**
 
 This plugin requires either **WorldEdit** or **FastAsyncWorldEdit (FAWE)** to be installed on your server.
