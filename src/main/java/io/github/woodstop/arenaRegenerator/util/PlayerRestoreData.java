@@ -63,4 +63,32 @@ public class PlayerRestoreData {
         // Consider removing potion effects if they were added by the minigame
         player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
     }
+
+    /**
+     * Restores the player's state, but explicitly DOES NOT restore their location.
+     * Use this when you want to teleport the player to a specific exit point instead.
+     * @param player The player to restore.
+     */
+    public void restoreWithoutLocation(Player player) {
+        player.getInventory().clear(); // Clear current inventory before restoring
+        player.getInventory().setContents(inventory);
+        player.getInventory().setArmorContents(armor); // Restore armor
+        player.setHealth(health);
+        player.setFoodLevel(foodLevel);
+        player.setSaturation(saturation);
+        player.setTotalExperience(totalExperience); // Restore total experience
+        player.setGameMode(gameMode);
+        player.setFlying(flying);
+        player.setFlySpeed(flySpeed);
+        player.setWalkSpeed(walkSpeed);
+
+        // Ensure player is not invulnerable or similar states from game
+        player.setFireTicks(0);
+        player.setFallDistance(0);
+        player.setAllowFlight(player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR || flying); // Restore flight permission
+        player.setExp(0); // Clear current level progress bar if needed
+        player.setLevel(0); // Clear current level if needed
+        // Consider removing potion effects if they were added by the minigame
+        player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+    }
 }

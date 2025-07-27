@@ -6,6 +6,7 @@ import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import io.github.woodstop.arenaRegenerator.util.PlayerRestoreData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -71,20 +72,20 @@ public class MinigameManager {
 
     /**
      * Attempts to join a player to a minigame arena.
-     * @param player The player to join.
+     *
+     * @param player    The player to join.
      * @param arenaName The name of the arena to join.
-     * @return true if the player successfully joined, false otherwise.
      */
-    public boolean joinMinigame(Player player, String arenaName) {
+    public void joinMinigame(Player player, String arenaName) {
         if (playerRestoreDataMap.containsKey(player.getUniqueId())) {
             player.sendMessage(ChatColor.RED + "You are already in a minigame!");
-            return false;
+            return;
         }
 
         MinigameArena arena = activeMinigames.get(arenaName);
         if (arena == null) {
             player.sendMessage(ChatColor.RED + "Minigame arena '" + arenaName + "' not found or not enabled.");
-            return false;
+            return;
         }
 
         // Save player's current state before joining
@@ -94,11 +95,9 @@ public class MinigameManager {
         if (arena.addPlayer(player)) {
             playerCurrentArenaMap.put(player.getUniqueId(), arenaName); // Track which arena the player is in
             player.sendMessage(ChatColor.GREEN + "You joined minigame arena: " + ChatColor.WHITE + arenaName);
-            return true;
         } else {
             // If addPlayer failed, remove restore data as player didn't fully join
             playerRestoreDataMap.remove(player.getUniqueId());
-            return false;
         }
     }
 
@@ -122,15 +121,30 @@ public class MinigameManager {
         }
 
         PlayerRestoreData restoreData = playerRestoreDataMap.remove(player.getUniqueId());
+        Location exitSpawn = (arena != null) ? arena.getExitSpawn() : null;
 
-        if (restoreData != null && restoreState) {
-            restoreData.restore(player);
-            player.sendMessage(ChatColor.GREEN + "Your state has been restored!");
-        } else if (arena != null && arena.getExitSpawn() != null) {
-            player.teleport(arena.getExitSpawn());
-            player.sendMessage(ChatColor.GREEN + "You have been teleported to the exit spawn.");
+        if (restoreState && restoreData != null) {
+            // Case 1: Restore player state is true
+            if (exitSpawn != null) {
+                // If exit spawn exists, teleport them there, overriding the restored location
+                restoreData.restoreWithoutLocation(player);
+                player.teleport(exitSpawn);
+                player.sendMessage(ChatColor.GREEN + "You have been teleported to the exit spawn.");
+            } else { // If no exit spawn, restore the player's original location
+                restoreData.restore(player);
+                player.sendMessage(ChatColor.GREEN + "Your state has been fully restored.");
+            }
         } else {
-            player.sendMessage(ChatColor.YELLOW + "You left the minigame. No specific exit point or restore data found.");
+            // Case 2: Restore player state is false (or restoreData was null unexpectedly)
+            if (exitSpawn != null) {
+                player.teleport(exitSpawn);
+                player.sendMessage(ChatColor.GREEN + "You have been teleported to the exit spawn.");
+            } else {
+                // Fallback if no exit spawn and no restore data (or restoreState is false)
+                player.teleport(player.getWorld().getSpawnLocation()); // Teleport to current world's spawn
+                player.sendMessage(ChatColor.YELLOW + "You left the minigame. No specific exit point or restore data found. Teleported to world spawn.");
+                plugin.getLogger().warning("[MinigameManager] No exit spawn or restore data for player " + player.getName() + " after leaving arena " + arenaName + ". Teleported to world spawn.");
+            }
         }
     }
 
