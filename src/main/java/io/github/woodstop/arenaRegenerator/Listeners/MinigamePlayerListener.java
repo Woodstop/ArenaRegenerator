@@ -1,8 +1,6 @@
 package io.github.woodstop.arenaRegenerator.Listeners;
 
-import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
 import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

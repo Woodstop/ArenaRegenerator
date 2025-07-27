@@ -2,6 +2,7 @@ package io.github.woodstop.arenaRegenerator.Minigame;
 
 import com.sk89q.worldedit.regions.Region;
 import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
+import io.github.woodstop.arenaRegenerator.Managers.MinigameScoreboardManager;
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -73,12 +74,14 @@ public class MinigameArena {
     }
     private long gameStartTick; // To store the server tick when the game officially started
     private final int BOUNDARY_CHECK_GRACE_PERIOD_TICKS = 40; // 2 seconds grace period (20 ticks per second)
+    private final MinigameScoreboardManager scoreboardManager;
 
     public MinigameArena(ArenaRegenerator plugin, String arenaName, ConfigurationSection config, ArenaDataManager arenaDataManager) throws IOException {
         this.plugin = plugin;
         this.arenaName = arenaName;
         this.config = config;
         this.arenaDataManager = arenaDataManager;
+        this.scoreboardManager = new MinigameScoreboardManager(plugin, arenaName);
 
         // Load settings from config
         this.minPlayers = config.getInt("min-players", 2);
@@ -166,6 +169,8 @@ public class MinigameArena {
         applyPlayerSettingsOnJoin(player);
         player.sendMessage(ChatColor.GREEN + "Welcome to the lobby for " + arenaName + "!");
         broadcast(ChatColor.YELLOW + player.getName() + " joined the lobby (" + playersInLobby.size() + "/" + maxPlayers + ").");
+        scoreboardManager.createScoreboard(player);
+        scoreboardManager.startScoreboardUpdateTask(this);
 
         checkStartCondition();
         return true;
@@ -179,6 +184,7 @@ public class MinigameArena {
         playersInLobby.remove(player.getUniqueId());
         playersInGame.remove(player.getUniqueId());
         playersSpectating.remove(player.getUniqueId());
+        scoreboardManager.removeScoreboard(player);
         broadcast(ChatColor.YELLOW + player.getName() + " left the arena.");
 
         // Manager will handle restoring state or teleporting to exit spawn
@@ -390,6 +396,30 @@ public class MinigameArena {
 
         // Broadcasts winner to all players
         final String finalWinnerName = winnerName;
+
+        List<UUID> playersToProcess = new ArrayList<>(playersWhoParticipatedThisRound); // Make a copy
+        plugin.getLogger().info("[MinigameArena] Processing " + playersToProcess.size() + " players for end-game broadcast and state restoration.");
+
+        // Process scoreboard removal immediately on this tick for all players
+        for (UUID uuid : playersToProcess) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                scoreboardManager.removeScoreboard(p); // Use new scoreboard manager
+                plugin.getLogger().info("[MinigameArena] Scoreboard removed for " + p.getName() + " on current tick.");
+            }
+        }
+
+        // Clear all internal player lists immediately on this tick
+        playersInLobby.clear();
+        playersInGame.clear();
+        playersSpectating.clear();
+        playersWhoParticipatedThisRound.clear(); // Clear for next round
+        plugin.getLogger().info("[MinigameArena] All internal player lists cleared.");
+
+        // Regenerate the arena immediately on this tick
+        resetArena();
+        currentState = GameState.WAITING; // Reset state for next game
+
         playersWhoParticipatedThisRound.forEach(uuid -> {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) { // Only send if player is still online
@@ -398,13 +428,20 @@ public class MinigameArena {
             }
         });
 
-        playersInLobby.clear();
-        playersInGame.clear();
-        playersSpectating.clear();
+        // Schedule other player processing (messages, leaveMinigame) for the next tick
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            for (UUID uuid : playersToProcess) {
+                Player p = Bukkit.getPlayer(uuid);
+                if (p != null) { // Only process if player is still online
+                    p.sendMessage(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + finalWinnerName);
+                    plugin.getMinigameManager().leaveMinigame(p, restorePlayerStateOnExit);
+                } else {
+                    plugin.getLogger().info("[MinigameArena] Player UUID " + uuid + " not online for delayed end-game processing.");
+                }
+            }
+        });
 
-        // Regenerate the arena
-        resetArena();
-        currentState = GameState.WAITING; // Reset state for next game
+
     }
 
     /**
@@ -494,6 +531,21 @@ public class MinigameArena {
         }
         return loadedItems;
     }
+
+
+    /**
+     * Helper method to get all players currently in this arena (lobby, game, or spectating).
+     * This is needed by MinigameScoreboardManager.
+     * @return A combined list of UUIDs of all players in the arena.
+     */
+    public List<UUID> getAllPlayersInArena() {
+        List<UUID> allPlayers = new ArrayList<>();
+        allPlayers.addAll(playersInLobby);
+        allPlayers.addAll(playersInGame);
+        allPlayers.addAll(playersSpectating);
+        return allPlayers;
+    }
+
 
     /**
      * Retrieves a random game spawn point from the configured list.
