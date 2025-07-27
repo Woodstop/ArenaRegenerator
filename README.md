@@ -5,7 +5,7 @@
 
 # **ArenaRegenerator Plugin**
 
-ArenaRegenerator is a plugin for Paper Minecraft servers that handles arena saving, resetting, and full minigame logic using WorldEdit or FAWE.
+ArenaRegenerator is a plugin for Minecraft servers that handles arena saving, regeneration, and full customizable minigame logic using WorldEdit or FAWE.
 
 This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes full minigame support (e.g., lobby, countdown, game state, win detection) and interactive signs for easy use.
 
