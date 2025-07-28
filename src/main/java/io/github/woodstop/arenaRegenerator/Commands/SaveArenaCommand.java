@@ -1,8 +1,6 @@
 package io.github.woodstop.arenaRegenerator.Commands;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -21,23 +19,17 @@ import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.WorldEdit;
 
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.Collections;
-import java.util.List;
 
-public class SaveArenaCommand implements CommandExecutor, TabCompleter {
+public class SaveArenaCommand implements CommandExecutor {
 
     private final ArenaDataManager dataManager;
 
@@ -86,10 +78,7 @@ public class SaveArenaCommand implements CommandExecutor, TabCompleter {
             Operations.complete(forwardExtentCopy);
 
             // Save the clipboard to a file
-            File dataFolder = ArenaRegenerator.getInstance().getDataFolder();
-            if (!dataFolder.exists()) dataFolder.mkdirs();
-
-            File outFile = new File(dataFolder, arenaName + ".schem");
+            File outFile = dataManager.getSchematicFile(arenaName);
             ClipboardFormat format = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC;
 
             try (ClipboardWriter writer = format.getWriter(new FileOutputStream(outFile))) {
@@ -101,14 +90,7 @@ public class SaveArenaCommand implements CommandExecutor, TabCompleter {
             // Get the selection origin
             BlockVector3 origin = clipboard.getOrigin();
 
-            // Save origin position in a file (arena1.json or .yml)
-            File jsonFile = new File(dataFolder, "arenas.json");
-
-            // Load or create root object
-            JsonObject root = new JsonObject();
-            if (jsonFile.exists()) {
-                root = JsonParser.parseReader(new FileReader(jsonFile)).getAsJsonObject();
-            }
+            JsonObject root = dataManager.loadArenasJson();
 
             // Create JSON entry for the arena
             JsonObject arenaData = new JsonObject();
@@ -120,9 +102,8 @@ public class SaveArenaCommand implements CommandExecutor, TabCompleter {
             root.add(arenaName, arenaData);
 
             // Save back to file
-            try (FileWriter writer = new FileWriter(jsonFile)) {
-                writer.write(new GsonBuilder().setPrettyPrinting().create().toJson(root));
-            }
+            dataManager.saveArenasJson(root);
+            player.sendMessage(ChatColor.GREEN + "Arena '" + arenaName + "' saved successfully!");
 
         } catch (Exception e) {
             player.sendMessage("§cFailed to save selection: " + e.getMessage());
@@ -130,18 +111,5 @@ public class SaveArenaCommand implements CommandExecutor, TabCompleter {
         }
 
         return true;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        // Check if the user is trying to autocomplete the first argument
-        if (args.length == 1) {
-            // Return a list containing one element: "<arenaName>"
-            // This will show up as a suggestion when the player presses tab
-            return Collections.singletonList("<arenaName>");
-        }
-
-        // For all other argument positions, return an empty list = no suggestions
-        return Collections.emptyList();
     }
 }

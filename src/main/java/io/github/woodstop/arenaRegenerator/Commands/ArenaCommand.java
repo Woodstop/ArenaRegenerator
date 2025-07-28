@@ -118,6 +118,7 @@ public class ArenaCommand implements CommandExecutor, TabCompleter {
             String subCommand = args[0].toLowerCase();
             switch (subCommand) {
                 case "save":
+                    return Collections.singletonList("<arenaName>");
                 case "regen":
                 case "clear":
                 case "delete":
