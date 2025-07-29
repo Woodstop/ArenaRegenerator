@@ -413,7 +413,7 @@ public class MinigameArena {
         for (UUID uuid : playersToProcess) {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                scoreboardManager.removeScoreboard(p); // Use new scoreboard manager
+                scoreboardManager.removeScoreboard(p);
                 plugin.getLogger().info("[MinigameArena] Scoreboard removed for " + p.getName() + " on current tick.");
             }
         }
@@ -429,28 +429,21 @@ public class MinigameArena {
         resetArena();
         currentState = GameState.WAITING; // Reset state for next game
 
-        playersWhoParticipatedThisRound.forEach(uuid -> {
-            Player p = Bukkit.getPlayer(uuid);
-            if (p != null) { // Only send if player is still online
-                p.sendMessage(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + finalWinnerName);
-                plugin.getMinigameManager().leaveMinigame(p, restorePlayerStateOnExit);
-            }
-        });
-
         // Schedule other player processing (messages, leaveMinigame) for the next tick
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            for (UUID uuid : playersToProcess) {
-                Player p = Bukkit.getPlayer(uuid);
-                if (p != null) { // Only process if player is still online
-                    p.sendMessage(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + finalWinnerName);
-                    plugin.getMinigameManager().leaveMinigame(p, restorePlayerStateOnExit);
-                } else {
-                    plugin.getLogger().info("[MinigameArena] Player UUID " + uuid + " not online for delayed end-game processing.");
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (UUID uuid : playersToProcess) {
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p != null) { // Only process if player is still online
+                        p.sendMessage(ChatColor.GOLD + "Game in " + arenaName + " has ended! Winner: " + finalWinnerName);
+                        plugin.getMinigameManager().leaveMinigame(p, restorePlayerStateOnExit);
+                    } else {
+                        plugin.getLogger().info("[MinigameArena] Player UUID " + uuid + " not online for delayed end-game processing.");
+                    }
                 }
             }
-        });
-
-
+        }.runTaskLater(plugin, 40L); // Delay 2 seconds before teleporting them back
     }
 
     /**
