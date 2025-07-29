@@ -40,7 +40,7 @@ public class MinigameDamageListener implements Listener {
         boolean damagerInMinigame = minigameManager.isPlayerInMinigame(damager);
         boolean damagedInMinigame = minigameManager.isPlayerInMinigame(damaged);
 
-        minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Players involved: Damager=" + damager.getName() + " (InMinigame: " + damagerInMinigame + "), Damaged=" + damaged.getName() + " (InMinigame: " + damagedInMinigame + ")");
+        //minigameManager.getPlugin().getLogger().info("[MinigameDamageListener] Players involved: Damager=" + damager.getName() + " (InMinigame: " + damagerInMinigame + "), Damaged=" + damaged.getName() + " (InMinigame: " + damagedInMinigame + ")");
 
 
         if (damagerInMinigame && damagedInMinigame) {
