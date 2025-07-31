@@ -4,16 +4,18 @@ main: io.github.woodstop.arenaRegenerator.ArenaRegenerator
 api-version: '1.21'
 softdepend: [FastAsyncWorldEdit, WorldEdit]
 commands:
-    arena:
-      description: "Main command for ArenaRegenerator plugin."
-      usage: "/arena <save|regen|clear|list|delete|info|select|join|leave> [arenaName]"
-      permission: arenaregenerator.command
-      aliases: [ ar ]
+  arena:
+    description: "Main command for ArenaRegenerator plugin."
+    usage: "/arena <save|regen|clear|list|delete|info|select|join|leave|reload|setspawn|delspawn|listgamespawn> [arenaName]"
+    permission: arenaregenerator.command
+    aliases: [ ar ]
+
 permissions:
-  arenaregenerator.command:
-    description: Allows access to the /arena command and its subcommands.
+  arenaregenerator.*:
+    description: Grants all ArenaRegenerator permissions.
     default: op
     children:
+      arenaregenerator.command: true # Grant access to the main command
       arenaregenerator.save: true
       arenaregenerator.regen: true
       arenaregenerator.clear: true
@@ -26,55 +28,77 @@ permissions:
       arenaregenerator.reload: true
       arenaregenerator.setspawn: true
       arenaregenerator.delspawn: true
+      arenaregenerator.sign.create.regen: true
+      arenaregenerator.sign.create.join: true
+      arenaregenerator.sign.create.leave: true
+      arenaregenerator.sign.use.regen: true
+      arenaregenerator.sign.use.join: true
+      arenaregenerator.sign.use.leave: true
+      arenaregenerator.sign.bypass: true
+      arenaregenerator.sign.break: true
+  arenaregenerator.command:
+    description: Base permission for the /arena command.
+    default: op
   arenaregenerator.save:
-    description: "Saves the specified region as a schematic"
+    description: Allows saving arenas.
     default: op
   arenaregenerator.regen:
-    description: "Regenerates the arena"
+    description: Allows regenerating arenas.
     default: op
   arenaregenerator.clear:
-    description: "Clears the blocks in an arena without deleting the schematic"
+    description: Allows clearing arenas.
     default: op
   arenaregenerator.list:
-    description: "Provides a list of arenas"
+    description: Allows listing arenas.
     default: op
   arenaregenerator.delete:
-    description: "Deletes the specified arena"
+    description: Allows deleting arenas.
     default: op
   arenaregenerator.info:
-    description: "Show metadata for a saved arena"
+    description: Allows getting arena info.
     default: op
   arenaregenerator.select:
-    description: "Selects the specified arena"
+    description: Allows selecting arenas.
     default: op
   arenaregenerator.join:
-    description: "Allows joining minigame arenas"
+    description: Allows joining minigame arenas.
     default: op
   arenaregenerator.leave:
-    description: "Allows leaving minigame arenas"
+    description: Allows leaving minigame arenas
     default: true
   arenaregenerator.reload:
-    description: "Allows reloading the plugin configuration."
+    description: Allows reloading the plugin configuration.
     default: op
   arenaregenerator.setspawn:
-    description: "Allows setting lobby, exit, spectator, and game spawns for minigames."
+    description: Allows setting lobby, exit, spectator, and game spawns.
     default: op
   arenaregenerator.delspawn:
-    description: "Allows deleting spawn points for minigames."
+    description: Allows deleting lobby, exit, spectator, and game spawns.
+    default: op
+  arenaregenerator.listgamespawn:
+    description: Allows listing game spawn points.
     default: op
   arenaregenerator.sign.create.regen:
+    description: Allows creating [ResetArena] signs.
     default: op
   arenaregenerator.sign.create.join:
+    description: Allows creating [JoinArena] signs.
     default: op
   arenaregenerator.sign.create.leave:
+    description: Allows creating [LeaveArena] signs.
     default: op
   arenaregenerator.sign.use.regen:
-    default: op
+    description: Allows using [ResetArena] signs.
+    default: false
   arenaregenerator.sign.use.join:
+    description: Allows using [JoinArena] signs.
     default: op
   arenaregenerator.sign.use.leave:
-    default: op
+    description: Allows using [LeaveArena] signs.
+    default: true
   arenaregenerator.sign.bypass:
+    description: Allows bypassing cooldown on [ResetArena] signs.
     default: op
   arenaregenerator.sign.break:
+    description: Allows breaking [ResetArena] signs.
     default: op
