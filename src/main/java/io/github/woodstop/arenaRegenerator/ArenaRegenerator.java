@@ -14,6 +14,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,10 @@ public final class ArenaRegenerator extends JavaPlugin {
         instance = this;
 
         // Save default config if not present
-        saveDefaultConfig();
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+        }
         getLogger().info("ArenaRegenerator enabled!");
 
         // Ensure data folder exists
