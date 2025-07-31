@@ -6,7 +6,7 @@ softdepend: [FastAsyncWorldEdit, WorldEdit]
 commands:
   arena:
     description: "Main command for ArenaRegenerator plugin."
-    usage: "/arena <save|regen|clear|list|delete|info|select|join|leave|reload|setspawn|delspawn|listgamespawn> [arenaName]"
+    usage: "/arena <save|regen|clear|list|delete|info|select|join|leave|reload|setspawn|delspawn> [arenaName]"
     permission: arenaregenerator.command
     aliases: [ ar ]
 
@@ -38,7 +38,7 @@ permissions:
       arenaregenerator.sign.break: true
   arenaregenerator.command:
     description: Base permission for the /arena command.
-    default: op
+    default: true
   arenaregenerator.save:
     description: Allows saving arenas.
     default: op
@@ -74,9 +74,6 @@ permissions:
     default: op
   arenaregenerator.delspawn:
     description: Allows deleting lobby, exit, spectator, and game spawns.
-    default: op
-  arenaregenerator.listgamespawn:
-    description: Allows listing game spawn points.
     default: op
   arenaregenerator.sign.create.regen:
     description: Allows creating [RegenArena] signs.
