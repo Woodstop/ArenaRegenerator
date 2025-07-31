@@ -425,10 +425,6 @@ public class MinigameArena {
         playersWhoParticipatedThisRound.clear(); // Clear for next round
         plugin.getLogger().info("[MinigameArena] All internal player lists cleared.");
 
-        // Regenerate the arena immediately on this tick
-        resetArena();
-        currentState = GameState.WAITING; // Reset state for next game
-
         // Schedule other player processing (messages, leaveMinigame) for the next tick
         new BukkitRunnable() {
             @Override
@@ -442,6 +438,9 @@ public class MinigameArena {
                         plugin.getLogger().info("[MinigameArena] Player UUID " + uuid + " not online for delayed end-game processing.");
                     }
                 }
+                // Regenerate the arena
+                resetArena();
+                currentState = GameState.WAITING; // Reset state for next game
             }
         }.runTaskLater(plugin, 40L); // Delay 2 seconds before teleporting them back
     }
