@@ -123,7 +123,6 @@ public class MinigameScoreboardManager {
                             arena.getAllPlayersInArena());
                 }
             }.runTaskTimer(plugin, 3L, 20L); // Update every 1 second (20 ticks)
-            plugin.getLogger().info("[MinigameScoreboardManager] Scoreboard update task started for arena " + arenaName);
         }
     }
 
@@ -134,7 +133,6 @@ public class MinigameScoreboardManager {
         if (scoreboardUpdateTask != null) {
             scoreboardUpdateTask.cancel();
             scoreboardUpdateTask = null;
-            plugin.getLogger().info("[MinigameScoreboardManager] Scoreboard update task cancelled for arena " + arenaName);
         }
     }
 
