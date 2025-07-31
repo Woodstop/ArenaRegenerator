@@ -26,6 +26,7 @@ public final class ArenaRegenerator extends JavaPlugin {
     private ArenaDataManager arenaDataManager;
     private Map<String, ConfigurationSection> minigameConfigs = new HashMap<>();
     private MinigameManager minigameManager;
+    private int signUseCooldownSeconds;
 
     @Override
     public void onEnable() {
@@ -75,7 +76,7 @@ public final class ArenaRegenerator extends JavaPlugin {
         getCommand("arena").setExecutor(arenaCommandExecutor);
         getCommand("arena").setTabCompleter(arenaCommandExecutor);
 
-        getServer().getPluginManager().registerEvents(new ArenaSignListener(), this); // ArenaSignListener does not directly depend on MinigameManager
+        getServer().getPluginManager().registerEvents(new ArenaSignListener(minigameManager), this); // ArenaSignListener does not directly depend on MinigameManager
         if (minigameManager != null) {
             getServer().getPluginManager().registerEvents(new MinigamePlayerListener(minigameManager), this);
             getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);
@@ -148,6 +149,14 @@ public final class ArenaRegenerator extends JavaPlugin {
     }
 
     /**
+     * Returns the configured cooldown in seconds for sign usage.
+     * @return The cooldown in seconds, or -1 if disabled.
+     */
+    public int getSignUseCooldownSeconds() {
+        return signUseCooldownSeconds;
+    }
+
+    /**
      * Returns the instance of the MinigameManager.
      * @return The MinigameManager instance.
      */
@@ -174,7 +183,7 @@ public final class ArenaRegenerator extends JavaPlugin {
         // Reload the config file from disk
         reloadConfig();
         getLogger().info("[ArenaRegenerator] Configuration file reloaded from disk.");
-
+        this.signUseCooldownSeconds = getConfig().getInt("sign-use-cooldown-seconds", -1);
         // Reload minigame configurations into ArenaRegenerator's internal map
         loadMinigameConfigs();
 
@@ -189,7 +198,7 @@ public final class ArenaRegenerator extends JavaPlugin {
         }
 
         // Re-register listeners
-        getServer().getPluginManager().registerEvents(new ArenaSignListener(), this);
+        getServer().getPluginManager().registerEvents(new ArenaSignListener(minigameManager), this);
         if (minigameManager != null) {
             getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);
             getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this);

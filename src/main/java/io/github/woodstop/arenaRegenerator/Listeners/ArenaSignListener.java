@@ -1,6 +1,6 @@
 package io.github.woodstop.arenaRegenerator.Listeners;
 
-import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
+import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,162 +19,186 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID; // Import UUID
 
 public class ArenaSignListener implements Listener {
 
-    private final Map<String, Long> lastClickTime = new HashMap<>();
-    private final long cooldownMillis = 10 * 1000; // 10 seconds
-    private final ArenaDataManager dataManager;
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
+    private final MinigameManager minigameManager;
 
-    public ArenaSignListener() {
-        this.dataManager = new ArenaDataManager();
+
+    public ArenaSignListener(MinigameManager minigameManager) {
+        this.minigameManager = minigameManager;
     }
 
     @EventHandler
-    public void onSignClick(PlayerInteractEvent event) {
+    public void onSignChange(SignChangeEvent event) {
+        Player player = event.getPlayer();
+        String line0 = event.line(0) != null
+                ? PlainTextComponentSerializer.plainText().serialize(event.line(0)).trim()
+                : "";
+
+        if (line0.equalsIgnoreCase("[RegenArena]")) { // Consistent with user's stated preference
+            if (!player.hasPermission("arenaregenerator.sign.create.regen")) {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "You don’t have permission to create a RegenArena sign.");
+                return;
+            }
+            event.setLine(0, ChatColor.AQUA + "[RegenArena]");
+            player.sendMessage(ChatColor.GREEN + "Regen Arena sign created!");
+        } else if (line0.equalsIgnoreCase("[JoinArena]")) {
+            if (!player.hasPermission("arenaregenerator.sign.create.join"))  {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "You don’t have permission to create a JoinArena sign.");
+                return;
+            }
+            event.setLine(0, ChatColor.GREEN + "[JoinArena]");
+            player.sendMessage(ChatColor.GREEN + "Join Arena sign created!");
+        } else if (line0.equalsIgnoreCase("[LeaveArena]")) {
+            if (!player.hasPermission("arenaregenerator.sign.create.leave")) {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "You don’t have permission to create a LeaveArena sign.");
+                return;
+            }
+            event.setLine(0, ChatColor.RED + "[LeaveArena]");
+            player.sendMessage(ChatColor.GREEN + "Leave Arena sign created!");
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-        Block block = event.getClickedBlock();
-        if (block == null || !(block.getState() instanceof Sign sign)) return;
+        Block clickedBlock = event.getClickedBlock();
+        if (clickedBlock == null || !(clickedBlock.getState() instanceof Sign)) return;
 
-        // Get the first line and second line of the sign
+        Sign sign = (Sign) clickedBlock.getState();
+        Player player = event.getPlayer();
+
         String header = getSignLine(sign, 0);
         String arenaName = getSignLine(sign, 1);
 
-        // If the first line of the sign is not [RegenArena]. [JoinArena], or [LeaveArena], stop
-        if (header.equalsIgnoreCase("[RegenArena]") || header.equalsIgnoreCase("[JoinArena]") || header.equalsIgnoreCase("[LeaveArena]")) {
-            event.setCancelled(true); // prevent the edit screen from opening
-        } else {
-            return; // Not a recognized arena sign, so do nothing.
-        }
-
-        Player player = event.getPlayer();
-
-        // If the player has bypass perms, skip the cooldown
-        if (!player.hasPermission("arenaregenerator.sign.bypass")) {
-            // Cooldown check
-            long now = System.currentTimeMillis();
-            if (lastClickTime.containsKey(player.getName())) {
-                long last = lastClickTime.get(player.getName());
-                if ((now - last) < cooldownMillis) {
-                    long remainingSeconds = (cooldownMillis - (now - last)) / 1000;
-                    player.sendMessage("§cYou must wait before using this again. Remaining: " + remainingSeconds + "s");
-                    return;
-                }
-            }
-            lastClickTime.put(player.getName(), now);
-        }
-
-        // Validate arena
-        try {
-            if (!dataManager.arenaExists(arenaName)) {
-                player.sendMessage("§cArena not found: " + arenaName);
-                return;
-            }
-        } catch (IOException e) {
-            player.sendMessage("§cError reading arena data. See console for details.");
-            e.printStackTrace();
+        // Harmonized check for all recognized sign types
+        if (!(header.equalsIgnoreCase("[RegenArena]") || header.equalsIgnoreCase("[JoinArena]") || header.equalsIgnoreCase("[LeaveArena]"))) {
             return;
         }
 
-        // --- Handle different sign types ---
-        if (header.equalsIgnoreCase("[RegenArena]")) {
+        event.setCancelled(true); // Prevent the edit sign screen from opening
+
+        // Get cooldown from config via the MinigameManager and main plugin instance
+        long cooldownSeconds = minigameManager.getPlugin().getSignUseCooldownSeconds();
+
+        // Cooldown check (only for non-bypass players AND if cooldown is enabled)
+        if (cooldownSeconds != -1 && !player.hasPermission("arenaregenerator.sign.bypass")) {
+            long cooldownMillis = cooldownSeconds * 1000; // Convert to milliseconds
+            long lastUsed = cooldowns.getOrDefault(player.getUniqueId(), 0L); // Use UUID for cooldowns
+            long now = System.currentTimeMillis();
+            if (now - lastUsed < cooldownMillis) {
+                long remainingSeconds = (cooldownMillis - (now - lastUsed)) / 1000 + 1; // +1 to round up
+                player.sendMessage(ChatColor.YELLOW + "Please wait " + remainingSeconds + " seconds before using this sign again.");
+                return; // Exit if cooldown is active
+            }
+            // If cooldown is NOT active, then update the last used time for THIS click
+            cooldowns.put(player.getUniqueId(), now); // Use UUID for cooldowns
+        }
+
+        // --- Execute action based on sign type and specific permissions ---
+        // The general 'arenaregenerator.sign.use' check has been removed.
+        // Each sign type now relies solely on its specific 'use' permission.
+        if (header.equalsIgnoreCase("[RegenArena]")) { // Consistent with onSignChange
             if (!player.hasPermission("arenaregenerator.sign.use.regen")) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to use RegenArena signs.");
                 return;
             }
-            // Validate arena existence for Regen signs
+            if (arenaName.isEmpty()) {
+                player.sendMessage(ChatColor.RED + "This RegenArena sign is not configured with an arena name!");
+                return;
+            }
             try {
-                if (!dataManager.arenaExists(arenaName)) {
-                    player.sendMessage(ChatColor.RED + "Arena not found: " + arenaName);
+                // Ensure MinigameManager and its ArenaDataManager are not null before use
+                if (minigameManager == null || minigameManager.getArenaDataManager() == null) {
+                    player.sendMessage(ChatColor.RED + "Plugin internal error: MinigameManager or ArenaDataManager not initialized.");
+                    minigameManager.getPlugin().getLogger().severe("ERROR: MinigameManager or ArenaDataManager is null when processing RegenArena sign for " + player.getName());
+                    return;
+                }
+                if (!minigameManager.getArenaDataManager().arenaExists(arenaName)) {
+                    player.sendMessage(ChatColor.RED + "Arena '" + arenaName + "' not found.");
                     return;
                 }
             } catch (IOException e) {
                 player.sendMessage(ChatColor.RED + "Error reading arena data. See console for details.");
+                minigameManager.getPlugin().getLogger().severe("Error checking arena existence for sign: " + e.getMessage());
                 e.printStackTrace();
                 return;
             }
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "arena regen " + arenaName);
-            player.sendMessage(ChatColor.GREEN + "Regenerating arena: " + ChatColor.WHITE + arenaName);
+            // Dispatch the command using the unified /arena structure
+            Bukkit.dispatchCommand(minigameManager.getPlugin().getServer().getConsoleSender(), "arena regen " + arenaName);
+            player.sendMessage(ChatColor.GREEN + "Arena '" + arenaName + "' is being regenerated!");
 
         } else if (header.equalsIgnoreCase("[JoinArena]")) {
             if (!player.hasPermission("arenaregenerator.sign.use.join")) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to use JoinArena signs.");
                 return;
             }
-            // For Join signs, arenaName is required
             if (arenaName.isEmpty()) {
                 player.sendMessage(ChatColor.RED + "This JoinArena sign is not configured with an arena name on the second line.");
                 return;
             }
-            // Dispatch the join command as the player to ensure proper permission checks by the command handler
-            Bukkit.dispatchCommand(player, "arena join " + arenaName);
+            if (minigameManager == null) { // Check if minigameManager is null before using it
+                player.sendMessage(ChatColor.RED + "Plugin internal error: MinigameManager not initialized.");
+                Bukkit.getLogger().severe("ERROR: MinigameManager is null when processing JoinArena sign for " + player.getName());
+                return;
+            }
+            minigameManager.joinMinigame(player, arenaName);
 
         } else if (header.equalsIgnoreCase("[LeaveArena]")) {
             if (!player.hasPermission("arenaregenerator.sign.use.leave")) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to use LeaveArena signs.");
                 return;
             }
-            // For Leave signs, no arenaName is needed on the second line, but we still read it.
-            // Dispatch the leave command as the player
-            Bukkit.dispatchCommand(player, "arena leave");
+            if (minigameManager == null) { // Check if minigameManager is null before using it
+                player.sendMessage(ChatColor.RED + "Plugin internal error: MinigameManager not initialized.");
+                Bukkit.getLogger().severe("ERROR: MinigameManager is null when processing LeaveArena sign for " + player.getName());
+                return;
+            }
+            minigameManager.leaveMinigame(player, true);
+
+        } else {
+            player.sendMessage(ChatColor.RED + "Unknown sign action type: " + header);
         }
     }
 
-    // Listener to change [RegenArena] to blue when typed and prevent players without permission from creating a sign
-    @EventHandler
-    public void onSignChange(SignChangeEvent event) {
-        String line0 = event.line(0) != null
-                ? PlainTextComponentSerializer.plainText().serialize(event.line(0)).trim()
-                : "";
-
-        if (line0.equalsIgnoreCase("[RegenArena]")) {
-            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.regen")) {
-                event.setCancelled(true);
-                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a RegenArena sign.");
-                return;
-            }
-            event.setLine(0, ChatColor.AQUA + "[RegenArena]");
-        } else if (line0.equalsIgnoreCase("[JoinArena]")) {
-            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.join"))  {
-                event.setCancelled(true);
-                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a JoinArena sign.");
-                return;
-            }
-            event.setLine(0, ChatColor.GREEN + "[JoinArena]");
-        } else if (line0.equalsIgnoreCase("[LeaveArena]")) {
-            if (!event.getPlayer().hasPermission("arenaregenerator.sign.create.leave")) {
-                event.setCancelled(true);
-                event.getPlayer().sendMessage(ChatColor.RED + "You don’t have permission to create a LeaveArena sign.");
-                return;
-            }
-            event.setLine(0, ChatColor.RED + "[LeaveArena]");
-        }
-    }
-
-    // Listener to prevent players from breaking the sign unless they have permission
     @EventHandler
     public void onSignBreak(BlockBreakEvent event) {
         if (!(event.getBlock().getState() instanceof Sign sign)) return;
 
-        String raw = getSignLine(sign, 0);
+        String line0Text = getSignLine(sign, 0);
 
-        if (raw.equalsIgnoreCase("[RegenArena]") || raw.equalsIgnoreCase("[JoinArena]") || raw.equalsIgnoreCase("[LeaveArena]")) {
+        if (line0Text.equalsIgnoreCase("[RegenArena]") || // Consistent with onSignChange
+                line0Text.equalsIgnoreCase("[JoinArena]") ||
+                line0Text.equalsIgnoreCase("[LeaveArena]")) {
+
             if (!event.getPlayer().hasPermission("arenaregenerator.sign.break")) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage(ChatColor.RED + "You don't have permission to break this sign.");
+            } else {
+                event.getPlayer().sendMessage(ChatColor.GREEN + "ArenaRegenerator sign broken.");
             }
         }
     }
+
     /**
-     * Helper method to get a sign line
+     * Helper method to get a sign line, stripping color codes and trimming.
      *
-     * @param sign      The Sign or SignChangeEvent object.
+     * @param sign      The Sign object.
      * @param lineIndex The index of the line (0-3).
      * @return The plain text content of the sign line.
      */
     private String getSignLine(Sign sign, int lineIndex) {
-     SignSide side = sign.getSide(Side.FRONT);
-        return ChatColor.stripColor(side.getLine(lineIndex)).trim();
+        SignSide side = sign.getSide(Side.FRONT);
+        if (lineIndex >= 0 && lineIndex < 4 && side.getLine(lineIndex) != null) {
+            return PlainTextComponentSerializer.plainText().serialize(side.line(lineIndex)).trim();
+        }
+        return "";
     }
 }

@@ -1,5 +1,9 @@
 # ArenaRegenerator Plugin Configuration
 
+# Cooldown in seconds for using ArenaRegenerator signs (e.g., [JoinArena], [RegenArena]).
+# Set to -1 to disable the cooldown entirely.
+sign-use-cooldown-seconds: -1
+
 # Minigame Arena Configurations
 # Define settings for each arena that will function as a minigame.
 minigames:

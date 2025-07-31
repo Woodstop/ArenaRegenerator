@@ -79,7 +79,7 @@ permissions:
     description: Allows listing game spawn points.
     default: op
   arenaregenerator.sign.create.regen:
-    description: Allows creating [ResetArena] signs.
+    description: Allows creating [RegenArena] signs.
     default: op
   arenaregenerator.sign.create.join:
     description: Allows creating [JoinArena] signs.
@@ -88,7 +88,7 @@ permissions:
     description: Allows creating [LeaveArena] signs.
     default: op
   arenaregenerator.sign.use.regen:
-    description: Allows using [ResetArena] signs.
+    description: Allows using [RegenArena] signs.
     default: false
   arenaregenerator.sign.use.join:
     description: Allows using [JoinArena] signs.
@@ -97,8 +97,8 @@ permissions:
     description: Allows using [LeaveArena] signs.
     default: true
   arenaregenerator.sign.bypass:
-    description: Allows bypassing cooldown on [ResetArena] signs.
+    description: Allows bypassing cooldown on [RegenArena] signs.
     default: op
   arenaregenerator.sign.break:
-    description: Allows breaking [ResetArena] signs.
+    description: Allows breaking [RegenArena] signs.
     default: op

@@ -9,7 +9,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -173,6 +172,8 @@ public class MinigameManager {
     public Set<String> getConfiguredMinigameNames() {
         return activeMinigames.keySet();
     }
+
+    public ArenaDataManager getArenaDataManager() { return arenaDataManager; }
 
     /**
      * NEW: Gets the name of the arena a player is currently in.
