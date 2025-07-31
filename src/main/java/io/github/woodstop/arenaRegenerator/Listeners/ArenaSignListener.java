@@ -50,12 +50,6 @@ public class ArenaSignListener implements Listener {
 
         Player player = event.getPlayer();
 
-        // If the player does not have permission, stop
-        if (!player.hasPermission("arenaregenerator.sign.use")) {
-            player.sendMessage("§cYou don’t have permission to use this sign.");
-            return;
-        }
-
         // If the player has bypass perms, skip the cooldown
         if (!player.hasPermission("arenaregenerator.sign.bypass")) {
             // Cooldown check
