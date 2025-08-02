@@ -55,6 +55,7 @@ public class MinigameArena {
 
     private final Set<Material> breakableBlocks;
     private final Set<Material> placeableBlocks;
+    private final List<ItemStack> winnerRewards;
 
     private final boolean preventDamage;
 
@@ -132,6 +133,7 @@ public class MinigameArena {
         this.preventDamage = config.getBoolean("prevent-damage", true);
         this.allowItemDrops = config.getBoolean("item-drops", true);
         this.preventItemDurabilityLoss = config.getBoolean("prevent-item-durability-loss", true);
+        this.winnerRewards = loadWinnerRewards();
 
         this.playersInLobby = new ArrayList<>();
         this.playersInGame = new ArrayList<>();
@@ -395,12 +397,15 @@ public class MinigameArena {
        cancelAllTasks();
 
         String winnerName = "No one";
+        Player winner;
         if (playersInGame.size() == 1) {
-            Player winner = Bukkit.getPlayer(playersInGame.get(0));
+            winner = Bukkit.getPlayer(playersInGame.get(0));
             if (winner != null) {
                 winnerName = winner.getName();
                 winner.sendMessage(ChatColor.GOLD + "Congratulations! You won the game in " + arenaName + "!");
             }
+        } else {
+            winner = null;
         }
 
         // Broadcasts winner to all players
@@ -441,6 +446,13 @@ public class MinigameArena {
                 // Regenerate the arena
                 resetArena();
                 currentState = GameState.WAITING; // Reset state for next game
+                // Give rewards to winner
+                if (winner != null && winnerRewards != null) {
+                    for (ItemStack item : winnerRewards) {
+                        winner.getInventory().addItem(item.clone()); // Use clone to prevent modifying the original ItemStack
+                    }
+                    winner.sendMessage(ChatColor.GOLD + "You received rewards for winning!");
+                }
             }
         }.runTaskLater(plugin, 40L); // Delay 2 seconds before teleporting them back
     }
@@ -533,6 +545,26 @@ public class MinigameArena {
         return loadedItems;
     }
 
+    /**
+     * Loads the list of winner reward items from the config.
+     * @return A list of ItemStacks.
+     */
+    private List<ItemStack> loadWinnerRewards() {
+        List<ItemStack> rewards = new ArrayList<>();
+        List<String> rewardStrings = config.getStringList("winner-rewards");
+
+        for (String rewardString : rewardStrings) {
+            try {
+                String[] parts = rewardString.split(":");
+                Material material = Material.valueOf(parts[0].toUpperCase());
+                int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+                rewards.add(new ItemStack(material, amount));
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("[MinigameArena] Invalid reward string: " + rewardString + ". Skipping.");
+            }
+        }
+        return rewards;
+    }
 
     /**
      * Helper method to get all players currently in this arena (lobby, game, or spectating).
