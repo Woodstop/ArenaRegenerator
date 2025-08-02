@@ -334,34 +334,26 @@ public class MinigameArena {
                 for (UUID uuid : playersInGame) {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p != null && !isInsideArena(p)) {
-                        // If this player's elimination means only one or zero players are left in-game
-                        if (playersInGame.size() <= 2) { // If current in-game players is 2 (this player + 1 other), or 1 (only this player)
-                            playersInGame.remove(uuid);
-                            endGame();
-                            return;
-                        } else {
-                            // More than 2 players, so this player goes to spectator
-                            p.sendMessage(ChatColor.RED + "You are now spectating!");
-                            // Remove from in-game, add to spectating
-                            playersInGame.remove(uuid);
-                            playersSpectating.add(uuid);
+                        p.sendMessage(ChatColor.RED + "You are now spectating!");
+                        // Remove from in-game, add to spectating
+                        playersInGame.remove(uuid);
+                        playersSpectating.add(uuid);
 
-                            // Teleport to spectator spawn and set gamemode
-                            if (spectatorSpawn != null) {
-                                p.teleport(spectatorSpawn);
-                            } else {
-                                // Fallback to a random game spawn point if spectator spawn is not set
-                                Location randomGameSpawn = getRandomGameSpawnPoint();
-                                if (randomGameSpawn != null) {
-                                    p.sendMessage(ChatColor.YELLOW + "No spectator spawn set. Teleporting to a game spawn point.");
-                                    p.teleport(randomGameSpawn);
-                                    plugin.getLogger().warning("No spectator spawn set for arena " + arenaName + ". Player " + p.getName() + " was teleported to a random game spawn.");
-                                }
+                        // Teleport to spectator spawn and set gamemode
+                        if (spectatorSpawn != null) {
+                            p.teleport(spectatorSpawn);
+                        } else {
+                            // Fallback to a random game spawn point if spectator spawn is not set
+                            Location randomGameSpawn = getRandomGameSpawnPoint();
+                            if (randomGameSpawn != null) {
+                                p.sendMessage(ChatColor.YELLOW + "No spectator spawn set. Teleporting to a game spawn point.");
+                                p.teleport(randomGameSpawn);
+                                plugin.getLogger().warning("No spectator spawn set for arena " + arenaName + ". Player " + p.getName() + " was teleported to a random game spawn.");
                             }
-                            p.setGameMode(GameMode.SPECTATOR);
-                            p.getInventory().clear(); // Clear inventory for spectators
-                            p.getInventory().setArmorContents(null);
                         }
+                        p.setGameMode(GameMode.SPECTATOR);
+                        p.getInventory().clear(); // Clear inventory for spectators
+                        p.getInventory().setArmorContents(null);
                     }
                 }
                 // After iterating through all players, re-check end condition if game hasn't already ended
@@ -454,7 +446,7 @@ public class MinigameArena {
                     winner.sendMessage(ChatColor.GOLD + "You received rewards for winning!");
                 }
             }
-        }.runTaskLater(plugin, 40L); // Delay 2 seconds before teleporting them back
+        }.runTaskLater(plugin, 30L); // Delay 1.5 seconds before teleporting them back
     }
 
     /**
