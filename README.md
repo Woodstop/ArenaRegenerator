@@ -15,12 +15,11 @@ This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes f
 2. [Dependencies](#dependencies)
 3. [Installation](#installation)
 4. [Usage](#usage)
-    * [Commands](#commands)
     * [Interactive Signs](#interactive-signs)
-5. [Permissions](#permissions)
-6. [Data Storage](#data-storage)
-7. [Building from Source](#building-from-source)
-8. [Support & Contribution](#support--contribution)
+    * [Commands and Permissions](#commands-and-permissions)
+5. [Data Storage](#data-storage)
+6. [Building from Source](#building-from-source)
+7. [Support & Contribution](#support--contribution)
 
 ## **Features**
 
