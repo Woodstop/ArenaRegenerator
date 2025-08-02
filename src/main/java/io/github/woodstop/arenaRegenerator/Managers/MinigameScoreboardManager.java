@@ -150,8 +150,6 @@ public class MinigameScoreboardManager {
                 plugin.getLogger().severe("[MinigameScoreboardManager] Error removing scoreboard for " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();
             }
-        } else {
-            plugin.getLogger().info("[MinigameScoreboardManager] No custom scoreboard found for " + player.getName() + " in arena " + arenaName + " to remove.");
         }
     }
 

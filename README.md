@@ -190,9 +190,10 @@ minigames:
     item-drops: true # Allow item drops from blocks
     prevent-item-durability-loss: true # Prevent items from losing durability
 
-    winner-rewards: # Gives players rewards for winning the game
-      - GOLD_BLOCK:1
-      - DIAMOND:5
+    winner-rewards: # Gives players rewards for winning the game. Use %player% to specify the winning player.
+      commands:
+        - "give %player% diamond 3"
+        - "eco give %player% 100"
 ```
 
 ## **Data Storage**

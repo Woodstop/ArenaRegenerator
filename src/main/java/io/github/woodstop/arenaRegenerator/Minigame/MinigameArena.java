@@ -55,7 +55,7 @@ public class MinigameArena {
 
     private final Set<Material> breakableBlocks;
     private final Set<Material> placeableBlocks;
-    private final List<ItemStack> winnerRewards;
+    private final List<String> winnerRewardCommands;
 
     private final boolean preventDamage;
 
@@ -133,7 +133,7 @@ public class MinigameArena {
         this.preventDamage = config.getBoolean("prevent-damage", true);
         this.allowItemDrops = config.getBoolean("item-drops", true);
         this.preventItemDurabilityLoss = config.getBoolean("prevent-item-durability-loss", true);
-        this.winnerRewards = loadWinnerRewards();
+        this.winnerRewardCommands = loadWinnerRewards();
 
         this.playersInLobby = new ArrayList<>();
         this.playersInGame = new ArrayList<>();
@@ -439,9 +439,10 @@ public class MinigameArena {
                 resetArena();
                 currentState = GameState.WAITING; // Reset state for next game
                 // Give rewards to winner
-                if (winner != null && winnerRewards != null) {
-                    for (ItemStack item : winnerRewards) {
-                        winner.getInventory().addItem(item.clone()); // Use clone to prevent modifying the original ItemStack
+                if (winner != null && winnerRewardCommands != null) {
+                    for (String command : winnerRewardCommands) {
+                        String parsedCommand = command.replace("%player%", winner.getName());
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsedCommand);
                     }
                     winner.sendMessage(ChatColor.GOLD + "You received rewards for winning!");
                 }
@@ -538,24 +539,17 @@ public class MinigameArena {
     }
 
     /**
-     * Loads the list of winner reward items from the config.
-     * @return A list of ItemStacks.
+     * Loads the list of winner reward commands from the config.
+     * @return A list of reward command strings.
      */
-    private List<ItemStack> loadWinnerRewards() {
-        List<ItemStack> rewards = new ArrayList<>();
-        List<String> rewardStrings = config.getStringList("winner-rewards");
+    private List<String> loadWinnerRewards() {
+        List<String> rewardCommands = config.getStringList("winner-rewards.commands");
 
-        for (String rewardString : rewardStrings) {
-            try {
-                String[] parts = rewardString.split(":");
-                Material material = Material.valueOf(parts[0].toUpperCase());
-                int amount = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
-                rewards.add(new ItemStack(material, amount));
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("[MinigameArena] Invalid reward string: " + rewardString + ". Skipping.");
-            }
+        if (rewardCommands.isEmpty()) {
+            plugin.getLogger().info("[MinigameArena] No winner reward commands found in config.");
         }
-        return rewards;
+
+        return rewardCommands;
     }
 
     /**
