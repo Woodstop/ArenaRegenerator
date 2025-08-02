@@ -331,7 +331,7 @@ public class MinigameArena {
             }
 
             if (currentState == GameState.IN_GAME && (plugin.getServer().getCurrentTick() - gameStartTick) > BOUNDARY_CHECK_GRACE_PERIOD_TICKS) {
-                for (UUID uuid : playersInGame) {
+                for (UUID uuid : new ArrayList<>(playersInGame)) {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p != null && !isInsideArena(p)) {
                         p.sendMessage(ChatColor.RED + "You are now spectating!");
