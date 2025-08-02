@@ -7,7 +7,7 @@
 
 ArenaRegenerator is a plugin for Minecraft servers that handles arena saving, regeneration, and full customizable minigame logic using WorldEdit or FAWE.
 
-This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes full minigame support (e.g., lobby, countdown, game state, win detection) and interactive signs for easy use.
+This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes full minigame support (e.g., lobby, countdown, game state, win detection, winner rewards) and interactive signs for easy use.
 
 ## **Table of Contents**
 
@@ -103,7 +103,7 @@ Create signs to automatically regenerate arenas, join minigames, or leave miniga
 2. Line 1: `[RegenArena]` or `[JoinArena]` or `[LeaveArena]`.
 3. Line 2: Your exact arena name.
 4. Players with appropriate permissions can click to use.
-5. Default 10-second cooldown; `arenaregenerator.sign.bypass` overrides.
+5. Configurable default 10-second cooldown; `arenaregenerator.sign.bypass` overrides.
 
 ## **Commands and Permissions**
 
