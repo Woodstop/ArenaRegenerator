@@ -43,7 +43,7 @@ This plugin manages and regenerates WorldEdit or FAWE-defined arenas. Includes f
 
   - **Spectator Mode**: Players leaving the arena boundaries during a game can be moved to spectator mode.
 
-  - **Configurable Rules**: Set minimum/maximum players, game duration, lobby countdown, items and game mode on join, what blocks can be broken or placed, and damage prevention per arena.
+  - **Configurable Rules**: Set minimum/maximum players, game duration, lobby countdown, items and game mode on join, rewards for winners, what blocks can be broken or placed, and damage prevention per arena.
 
 * Interactive Signs:
   - Regenerate arenas on click with `[RegenArena]` signs
@@ -134,6 +134,66 @@ Commands use the `/arena` prefix. An alias `/ar` is also available. Replace `<ar
 | `arenaregenerator.sign.bypass`       | Allows players to bypass sign cooldowns                              | *Click signs repeatedly*                              |
 | `arenaregenerator.sign.break`        | Allows players to break interactive signs                            | *Break sign block*                                    |
 
+## **Example Configuration**
+```
+# ArenaRegenerator Plugin Configuration
+
+# Cooldown in seconds for using ArenaRegenerator signs (e.g., [JoinArena], [RegenArena]).
+# Set to -1 to disable the cooldown entirely.
+sign-use-cooldown-seconds: -1
+
+# Minigame Arena Configurations
+# Define settings for each arena that will function as a minigame.
+minigames:
+  # Example Arena Configuration
+  arena_1:
+    enabled: false # Whether this arena can be used as a minigame
+    min-players: 2 # Minimum players required to start the game
+    max-players: 8 # Maximum players allowed in the arena
+    game-duration-seconds: 180 # How long the game lasts (e.g., 3 minutes)
+    lobby-countdown-seconds: 10 # Countdown before game starts when min players met
+
+    # Player State Restoration
+    # If true, players' inventory, health, food, game mode, and exact location
+    # will be saved before joining and restored upon leaving/game end.
+    # If an exit spawn is defined, this will override the player's last location.
+    restore-player-state-on-exit: true
+
+    # Whether players' inventories are cleared when joining the game
+    clear-inventory-on-join: true
+
+    # Specify items to give on join as a list of "MATERIAL_NAME" or "MATERIAL_NAME:AMOUNT"
+    give-item-on-join:
+      - DIAMOND_SHOVEL
+      - STONE_AXE:1 # Example: a stone axe with quantity 1
+      - LEATHER_HELMET
+      - LEATHER_CHESTPLATE
+      - LEATHER_LEGGINGS
+      - LEATHER_BOOTS
+      - COOKED_BEEF:16 # Example: 16 cooked beef
+
+    game-mode-on-join: SURVIVAL # SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR
+
+    # List of materials that players are allowed to break in this arena
+    breakable-blocks:
+      - SNOW_BLOCK
+      - ICE
+      - GLASS
+
+    # List of materials that players are allowed to place in this arena
+    placeable-blocks:
+      - COBBLESTONE
+      - DIRT
+      - SAND
+
+    prevent-damage: true # Prevent any damage to the players
+    item-drops: true # Allow item drops from blocks
+    prevent-item-durability-loss: true # Prevent items from losing durability
+
+    winner-rewards: # Gives players rewards for winning the game
+      - GOLD_BLOCK:1
+      - DIAMOND:5
+```
 
 ## **Data Storage**
 
