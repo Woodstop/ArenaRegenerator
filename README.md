@@ -113,15 +113,15 @@ Commands use the `/arena` prefix. An alias `/ar` is also available. Replace `<ar
 
 | **Permission Node**                  | **Description**                                                      | **Command**                                           |
 |--------------------------------------|----------------------------------------------------------------------|-------------------------------------------------------|
-| `arenaregenerator.regen`             | Allows use of the regen function                                     | `/arena regen`                                        |
-| `arenaregenerator.save`              | Allows saving an arena                                               | `/arena save`                                         |
+| `arenaregenerator.regen`             | Allows use of the regen function                                     | `/arena regen <arenaName>`                            |
+| `arenaregenerator.save`              | Allows saving an arena                                               | `/arena save <arenaName>`                             |
 | `arenaregenerator.list`              | Allows listing saved arenas                                          | `/arena list`                                         |
-| `arenaregenerator.delete`            | Allows deleting an arena                                             | `/arena delete`                                       |
-| `arenaregenerator.clear`             | Allows clearing an arena without deleting the schematic              | `/arena clear`                                        |
-| `arenaregenerator.info`              | Allows viewing info about the current arena                          | `/arena info`                                         |
-| `arenaregenerator.select`            | Allows selecting a region for an arena                               | `/arena select`                                       |
-| `arenaregenerator.setspawn`          | Allows setting lobby, exit, spectator, and game spawns for minigames | `/arena setspawn <arenaName> <arenaType> [spawnName]` |
-| `arenaregenerator.delspawn`          | Allows deleting spawn points for minigames                           | `/arena delspawn <arenaName> <arenaType> [spawnName]` |
+| `arenaregenerator.delete`            | Allows deleting an arena                                             | `/arena delete <arenaName>`                           |
+| `arenaregenerator.clear`             | Allows clearing an arena without deleting the schematic              | `/arena clear <arenaName>`                            |
+| `arenaregenerator.info`              | Allows viewing info about the current arena                          | `/arena info <arenaName>`                             |
+| `arenaregenerator.select`            | Allows selecting a region for an arena                               | `/arena select <arenaName>`                           |
+| `arenaregenerator.setspawn`          | Allows setting lobby, exit, spectator, and game spawns for minigames | `/arena setspawn <arenaType> <arenaName> [spawnName]` |
+| `arenaregenerator.delspawn`          | Allows deleting spawn points for minigames                           | `/arena delspawn <arenaType> <arenaName> [spawnName]` |
 | `arenaregenerator.join`              | Allows joining minigame arenas                                       | `/arena join <arenaName>`                             |
 | `arenaregenerator.leave`             | Allows leaving minigame arenas                                       | `/arena leave`                                        |
 | `arenaregenerator.reload`            | Allows reloading the plugin configuration                            | `/arena reload`                                       |
