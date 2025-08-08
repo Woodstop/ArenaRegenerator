@@ -60,7 +60,7 @@ public final class ArenaRegenerator extends JavaPlugin {
             worldEditLoaded = true;
         } else {
             getLogger().severe("Neither FastAsyncWorldEdit nor WorldEdit was found! This plugin requires one of them to function.");
-            getServer().getPluginManager().disablePlugin(this); // Disable your plugin if dependency missing
+            getServer().getPluginManager().disablePlugin(this); // Disable plugin if dependency missing
             return; // Stop further initialization
         }
 
@@ -72,7 +72,7 @@ public final class ArenaRegenerator extends JavaPlugin {
             getLogger().severe("[ArenaRegenerator] Minigame features will be unavailable.");
             this.minigameManager = null;
             // It's critical to disable the plugin or handle this gracefully if minigame features are essential
-            // For now, we'll allow it to continue but minigame features won't work.
+            // For now, allow it to continue but minigame features won't work.
         }
 
         // Register the main ArenaCommand and its TabCompleter

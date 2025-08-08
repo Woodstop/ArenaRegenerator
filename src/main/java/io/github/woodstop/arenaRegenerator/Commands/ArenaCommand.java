@@ -2,7 +2,6 @@ package io.github.woodstop.arenaRegenerator.Commands;
 
 import io.github.woodstop.arenaRegenerator.ArenaRegenerator;
 import io.github.woodstop.arenaRegenerator.Managers.MinigameManager;
-import io.github.woodstop.arenaRegenerator.Minigame.MinigameArena;
 import io.github.woodstop.arenaRegenerator.util.ArenaDataManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
