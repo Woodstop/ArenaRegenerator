@@ -80,15 +80,7 @@ public final class ArenaRegenerator extends JavaPlugin {
         getCommand("arena").setExecutor(arenaCommandExecutor);
         getCommand("arena").setTabCompleter(arenaCommandExecutor);
 
-        getServer().getPluginManager().registerEvents(new ArenaSignListener(minigameManager), this); // ArenaSignListener does not directly depend on MinigameManager
-        if (minigameManager != null) {
-            getServer().getPluginManager().registerEvents(new MinigamePlayerListener(minigameManager), this);
-            getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);
-            getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this);
-            getServer().getPluginManager().registerEvents(new MinigameItemListener(minigameManager), this);
-        } else {
-            getLogger().warning("[ArenaRegenerator] MinigameManager is null, skipping registration of minigame-specific listeners.");
-        }
+        registerListeners();
     }
 
     @Override
@@ -202,12 +194,18 @@ public final class ArenaRegenerator extends JavaPlugin {
         }
 
         // Re-register listeners
+        registerListeners();
+    }
+
+    private void registerListeners() {
         getServer().getPluginManager().registerEvents(new ArenaSignListener(minigameManager), this);
         if (minigameManager != null) {
+            getServer().getPluginManager().registerEvents(new MinigamePlayerListener(minigameManager), this);
             getServer().getPluginManager().registerEvents(new MinigameBlockListener(minigameManager), this);
             getServer().getPluginManager().registerEvents(new MinigameDamageListener(minigameManager), this);
+            getServer().getPluginManager().registerEvents(new MinigameItemListener(minigameManager), this);
         } else {
-            getLogger().warning("[ArenaRegenerator] MinigameManager is null, skipping registration of minigame-specific listeners.");
+            getLogger().warning("[ArenaRegenerator] MinigameManager is null, skipping minigame-specific listeners.");
         }
     }
 }
