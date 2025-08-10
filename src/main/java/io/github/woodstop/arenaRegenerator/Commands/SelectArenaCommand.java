@@ -61,6 +61,8 @@ public class SelectArenaCommand implements CommandExecutor {
                     newSelection.getMinimumPoint(),
                     newSelection.getMaximumPoint()));
 
+            session.getRegionSelector(wePlayer.getWorld())
+                    .learnChanges(); // Tell WE the selection changed
             session.dispatchCUISelection(wePlayer); // For client-side WorldEdit CUI if installed
 
             player.sendMessage("§aArena '" + arenaName + "' selected in WorldEdit!");
