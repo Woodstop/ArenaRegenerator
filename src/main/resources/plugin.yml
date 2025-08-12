@@ -1,6 +1,7 @@
 name: ArenaRegenerator
 version: ${project.version}
 main: io.github.woodstop.arenaRegenerator.ArenaRegenerator
+author: Woodstop
 api-version: '1.21'
 softdepend: [FastAsyncWorldEdit, WorldEdit]
 commands:
