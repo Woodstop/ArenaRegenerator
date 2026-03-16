@@ -176,6 +176,12 @@ public final class ArenaRegenerator extends JavaPlugin {
      */
     public void reloadPlugin() {
         getLogger().info("[ArenaRegenerator] Reloading plugin configuration...");
+
+        // If a game is active, ensure players are teleported out of it prior to reloading.
+        if (this.minigameManager != null) {
+            this.minigameManager.shutdown();
+        }
+
         // Reload the config file from disk
         reloadConfig();
         getLogger().info("[ArenaRegenerator] Configuration file reloaded from disk.");
