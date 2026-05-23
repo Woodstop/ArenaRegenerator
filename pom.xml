@@ -8,13 +8,12 @@
     <artifactId>arenaregenerator</artifactId>
     <version>1.2.8</version>
     <packaging>jar</packaging>
-
     <name>ArenaRegenerator</name>
     <description>ArenaRegenerator is a plugin for Paper Minecraft servers that handles arena saving, resetting, and full minigame logic using WorldEdit or FAWE.</description>
     <url>https://github.com/Woodstop/ArenaRegenerator</url>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -25,10 +24,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.15.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
         </plugins>
@@ -59,7 +57,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <version>[26.1.2.build,)</version>
             <scope>provided</scope>
         </dependency>
              
@@ -67,7 +65,7 @@
         <dependency>
             <groupId>com.fastasyncworldedit</groupId>
             <artifactId>FastAsyncWorldEdit-Core</artifactId>
-            <version>2.15.0</version>
+            <version>2.15.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -75,14 +73,14 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
-            <version>7.3.16</version>
+            <version>7.4.3</version>
             <scope>provided</scope>
         </dependency>
         <!-- Gson for JSON handling -->
          <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.13.2</version>
+            <version>2.14.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
