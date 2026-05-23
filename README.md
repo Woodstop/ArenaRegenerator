@@ -1,4 +1,4 @@
-![Java](https://img.shields.io/badge/Java-21-blue)
+![Java](https://img.shields.io/badge/Java-25-blue)
 ![License](https://img.shields.io/github/license/Woodstop/ArenaRegenerator)
 ![Release](https://img.shields.io/github/v/release/Woodstop/ArenaRegenerator)
 ![Issues](https://img.shields.io/github/issues/Woodstop/ArenaRegenerator)
@@ -211,7 +211,7 @@ The plugin stores:
 To build from source:
 
 1. Clone repository.
-2. Ensure Java 21 and JAVA\_HOME are set.
+2. Ensure Java 25 and JAVA\_HOME are set.
 3. Build with Maven (`mvn clean package`).  
    The compiled JAR will be in the `target/` directory.
 
